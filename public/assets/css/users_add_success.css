@@ -1,0 +1,54 @@
+/* 
+    Document   : users_add_success.css
+    Created on : May 25, 2013, 9:02:24 PM
+    Author     : Quinn
+    Description:
+        Purpose of the stylesheet follows.
+*/
+#success_message{
+    position:relative;
+    min-width:200px;
+    max-width:400px;
+    margin:auto;
+    border:3px solid black;
+    border-radius:15px;
+    padding:15px;
+    background-color:white;
+}
+
+#success_message h1{
+    margin-bottom:10px;
+}
+
+#success_message table {
+    width:100%;
+    margin-top:10px;
+    margin-bottom:10px;
+    border:1px solid #cccccc;
+    border-collapse:collapse;
+}
+
+#success_message td{
+    padding:5px 10px;
+    border-top:1px solid #cccccc;
+    border-bottom:1px solid #cccccc;
+    font-size:85%;
+}
+
+#success_message td.label {
+    font-weight:bold;
+    text-align:right;
+}
+
+#success_message p {
+    margin:10px;
+}
+
+#password_info {
+    border:1px solid #cccccc;
+    margin:auto;
+    text-align:center;
+}
+
+
+

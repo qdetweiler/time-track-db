@@ -1,0 +1,36 @@
+/* 
+    Document   : logs_logtable
+    Created on : May 27, 2013, 6:37:50 PM
+    Author     : Quinn
+    Description:
+        Purpose of the stylesheet follows.
+*/
+table{
+    display:block;
+    margin:auto;
+    margin-top:20px;
+    border:3px solid black;
+    background-color:white;
+    padding:15px 10px;
+    border-collapse:collapse;
+}
+
+tr, td {
+    padding:5px 20px;
+}
+
+thead td{
+    font-weight:bold;
+    font-size:115%;
+    padding-bottom:15px;
+}
+
+thead #user_info {
+    font-size:125%;
+    background-color:#cccccc;
+}
+
+#overall_total {
+    font-weight:bold;
+    padding-top:15px;
+}

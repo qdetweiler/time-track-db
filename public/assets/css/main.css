@@ -1,0 +1,203 @@
+/* 
+    Document   : layout
+    Created on : May 18, 2013, 5:12:00 PM
+    Author     : Quinn
+    Description:
+        Used to setup the main layout for the TimeTrack app
+*/
+
+
+/*  TEMPLATE STYLES  */
+body {
+    background-color:#59cb59;
+}
+
+#navigation {
+    margin-bottom:20px;
+}
+
+#navigation > ul{
+    min-width:200px;
+    max-width:960px;
+    height:25px;
+    display:block;
+    background-color:#000000;
+}
+
+#navigation li:first-child {
+    padding-left:15px;
+}
+
+#navigation li {
+    display:inline;
+    padding-right:15px;
+}
+
+#navigation a {
+    line-height:25px;
+    color:white;
+    text-decoration:none;
+    outline-width:0;
+    font-size:12px;
+    font-weight:bold;
+}
+
+#container {
+    position:relative;
+    margin:auto;
+    top:10px;
+}
+
+#header, #container {
+    min-width:200px;
+    max-width:960px;
+    margin:auto;
+}
+
+#header {
+    border:3px solid black;
+    height:100px;
+    background-color:#ffffff;
+}
+
+#header h1{
+    position:relative;
+    top:35px;
+    right:50px;
+    text-align:right;
+}
+
+h3 {
+    margin-bottom:10px;
+    font-weight:bold;
+}
+
+
+
+/*  LOGIN PAGE STYLES  */
+#login_box {
+    position:relative;
+    top:50px;
+    padding:20px;
+    width:320px;
+    margin:auto;
+    border-radius:15px;
+    background:white;
+}
+
+#login_box label {
+    font-weight:bold;
+    margin-left:5px;
+    cursor:default;
+}
+#login_box input{
+    display:block;
+    margin:8px 5px;
+    height:25px;
+    width:300px;
+}
+#submit {
+    text-align:center;
+}
+#submit {
+    display:block;
+    margin-left:auto;
+    margin-right:auto;
+    margin-top:20px;
+    width:70px;
+    height:25px;
+    padding:0px 5px;
+}
+#login_box #error {
+    margin-left:5px;
+    margin-top:8px;
+    margin-bottom:15px;
+    font-size:75%;
+    color:red;
+}
+
+/*   Black button styling  */
+a.black_button {
+    padding:5px;
+    border:2px solid black;
+    background-color:black;
+    color:white;
+    font-weight:bold;
+    font-size:80%;
+    text-decoration:none;
+}
+
+a.black_button:hover {
+    background-color:#666666;
+    cursor:pointer;
+}
+
+a.black_button:active {
+    background-color:black;
+    cursor:pointer;
+}
+
+button.black_button {
+    padding:5px;
+    background-color:black;
+    border:2px solid black;
+    color:white;
+    font-weight:bold;
+    font-size:80%;
+}
+
+button.black_button:hover {
+    background-color:#666666;
+    cursor:pointer;
+}
+
+button.black_button:active {
+    background-color:black;
+}
+
+
+/*     Display Styling    */
+div.rounded_box {
+    position:relative;
+    min-width:200px;
+    max-width:400px;
+    border:3px solid black;
+    border-radius:15px;
+    background-color:white;
+    padding:15px;
+    margin:auto;
+}
+
+div.content_wrapper {
+    min-width:300px;
+    max-width:800px;
+    position:relative;
+    margin:auto;
+}
+
+
+/*     Form Styles    */
+div.field_set {
+    position:relative;
+    display:block;
+    margin:5px;
+}
+
+div.field_set input {
+    margin-right:15px;
+    margin-bottom:5px;
+    width:95%;
+    padding:5px;
+}
+
+div.field_set label {
+    display:block;
+    font-weight:bold;
+    cursor:default;
+}
+
+div.field_set select {
+    width:70%;
+    padding:3px;
+    margin-bottom:5px;
+}

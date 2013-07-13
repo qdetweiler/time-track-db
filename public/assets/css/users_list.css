@@ -1,0 +1,82 @@
+/* 
+    Document   : users_list
+    Created on : May 25, 2013, 8:47:31 PM
+    Author     : Quinn
+    Description:
+        Purpose of the stylesheet follows.
+*/
+/*   Users List Styles   */
+#user_table_wrapper{
+    min-width:200px;
+    max-width:850px;
+    display:block;
+    margin:auto;
+    padding:15px;
+}
+
+#user_table {
+    border:3px solid black;
+    border-collapse:collapse;
+    border-radius:15px;
+}
+#user_table td {
+    padding:5px;
+    border:1px solid black;
+    font-size:90%;
+}
+#user_table #titles{
+    background-color:black;
+    color:white;
+}
+/*#titles td{
+    border-left:1px solid white;
+    border-right:1px solid white;
+}*/
+
+#user_table #titles h1{
+    font-size:125%;
+    font-weight:bold;
+}
+#user_table .name {
+    width:200px;
+}
+#user_table .username {
+    width:200px;
+}
+#user_table .type {
+    text-align:center;
+    width:100px;
+}
+#user_table .status {
+    text-align:center;
+    width:150px;
+}
+#user_table .options {
+    width:200px;
+}
+#user_table .options_edit,.options_logs,.options_remove, .options_reset{
+    text-align:center;
+}
+#user_table .options_edit a,.options_logs a,.options_remove a, .options_reset a{
+    text-decoration:none;
+}
+#user_table .odd {
+    background-color:white;
+}
+#user_table .even {
+    background-color:white;
+}
+#user_table .cl_in {
+    color:green;
+}
+#user_table .cl_out {
+    color:red;
+}
+#user_table_wrapper #add a{
+    position:absolute;
+    margin-top:15px;
+}
+
+#user_table a.disabled {
+    color:#cccccc;
+}

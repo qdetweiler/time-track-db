@@ -1,0 +1,37 @@
+/* 
+    Document   : logs_display
+    Created on : May 28, 2013, 11:25:43 PM
+    Author     : Quinn
+    Description:
+        Style the logs display control section
+*/
+#wrapper{
+    display:block;
+    margin:auto;
+    min-width:200px;
+    max-width:800px;
+}
+
+#controls {
+    background:white;
+    border:3px solid black;
+    padding:15px 10px;
+}
+
+#control_form span{
+    margin:10px;
+}
+
+#control_form label {
+    font-weight:bold;
+    cursor:default;
+    padding:5px;
+}
+
+#button {
+    
+}
+
+span {
+    display:inline-block;
+}

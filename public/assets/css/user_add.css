@@ -1,0 +1,48 @@
+/* 
+    Document   : user_add
+    Created on : May 25, 2013, 8:53:00 PM
+    Author     : Quinn
+    Description:
+        Purpose of the stylesheet follows.
+*/
+
+/*      Add User Styles      */
+#user_info {
+    position:absolute;
+    min-width:300px;
+    max-width:800px;    
+    left:0;
+    width:60%;
+}
+
+#directions {
+    position:absolute;
+    right:0px;
+    margin-left:67%;
+    border:3px solid black;
+    border-radius:15px;
+    padding:15px;
+    padding-left:30px;
+    float:left;
+}
+
+#directions p{
+    font-size:75%;
+    margin-bottom:5px;
+    font-weight:bold;
+}
+
+#directions ol{
+    font-size:75%;
+    margin:10px;
+}
+
+#directions li{
+    margin-bottom:5px;
+}
+
+#user_info .error {
+    font-size:75%;
+    color:red;
+    margin-bottom:20px;
+}
