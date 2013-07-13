@@ -69,7 +69,7 @@
     </div>
     </form>
 </div>
-<div id="directions">
+<div id="direction_box" class='instructions'>
     <h3>Instructions</h3>
     <p>The following restrictions apply to first and last names</p>
     <ol id="name_rules">

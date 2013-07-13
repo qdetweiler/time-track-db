@@ -2,7 +2,7 @@
     <h1>Success!</h1>
     <p>The following user has been successfully added to the TimeTrack system.</p>
     <div id='user_info'>
-        <table>
+        <table class="info_table">
             <tr>
                 <td class='label'>First Name</td>
                 <td><?php echo $fname?></td>

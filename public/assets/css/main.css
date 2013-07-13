@@ -68,7 +68,6 @@ body {
 }
 
 h3 {
-    margin-bottom:10px;
     font-weight:bold;
 }
 
@@ -155,6 +154,22 @@ button.black_button:active {
     background-color:black;
 }
 
+input.black_button {
+    background-color:black;
+    color:white;
+    padding:5px;
+    font-weight:bold;
+    border:2px solid black;
+}
+
+input.black_button:hover {
+    background-color:#666666;
+}
+
+input.black_button:active {
+    background-color:black;
+}
+
 
 /*     Display Styling    */
 div.rounded_box {
@@ -173,6 +188,32 @@ div.content_wrapper {
     max-width:800px;
     position:relative;
     margin:auto;
+}
+
+.error_msg {
+    margin:5px;
+    color:red;
+    font-size:75%;
+}
+
+.info_table {
+    width:100%;
+    margin-top:10px;
+    margin-bottom:10px;
+    border:1px solid #cccccc;
+    border-collapse:collapse;
+}
+
+.info_table td{
+    padding:5px 10px;
+    border-top:1px solid #cccccc;
+    border-bottom:1px solid #cccccc;
+    font-size:85%;
+}
+
+.info_table .label {
+    font-weight:bold;
+    text-align:right;
 }
 
 
@@ -200,4 +241,24 @@ div.field_set select {
     width:70%;
     padding:3px;
     margin-bottom:5px;
+}
+
+.instructions p {
+    font-size:75%;
+    font-weight:bold;
+}
+
+.instructions p, .instructions li{
+    padding:5px 0px;
+}
+
+.instructions li{
+    position:relative;
+    left:1em;
+    font-size:80%;
+}
+
+.instructions ol {
+    font-size:90%;
+    margin:10px;
 }

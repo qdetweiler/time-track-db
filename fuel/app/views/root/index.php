@@ -20,6 +20,6 @@
                 <p class='error_msg'><?php echo $error?></p>
             </div>
         <?php endif?>
-        <button id='submit' type='submit' name='submit'>Login</button>
+        <button id='submit' class='black_button' type='submit' name='submit'>Login</button>
     </form>
 </div>

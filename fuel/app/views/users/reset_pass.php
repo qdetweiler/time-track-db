@@ -1,5 +1,5 @@
 <div class="rounded_box">
-    <div id='instructions'>
+    <div id='instruction_box' class='instructions'>
         <p>Your password has expired.  Please enter a new password that meets the following requirements:</p>
         <ol>
             <li>Password must have at least one number and one letter</li>
@@ -21,12 +21,12 @@
                 <input type='password' name='newpass2' value=''/>
             </div>
             <?php if(isset($errormsg)):?>
-            <div id='error_msg'>
+            <div class='error_msg'>
                 <p><?php echo $errormsg?></p>
             </div>
             <?php endif ?>
-            <div id='button'>
-                <input type='submit' value='Submit'/>
+            <div class='textCenter'>
+                <input class='black_button' type='submit' value='Submit'/>
             </div>
         </form>
     </div>

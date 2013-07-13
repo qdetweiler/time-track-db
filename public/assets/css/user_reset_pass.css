@@ -6,49 +6,13 @@
         Purpose of the stylesheet follows.
 */
 
-#instructions {
+#instruction_box {
     margin:15px;
 }
 
-#instructions p, #instructions li{
-    padding:5px;
-}
-
-#instructions li{
-    font-size:80%;
-    position:relative;
-    left:30px;
-}
-
 #reset_box {
+    position:relative;
     margin-left:15px;
     margin-right:15px;
-}
-
-#error_msg {
-    margin-top:15px;
-    margin-bottom:15px;
-    color:red;
-    font-size:75%;
-}
-
-#button {
-    text-align:center;
-}
-
-#button input{
-    background-color:black;
-    color:white;
-    padding:5px;
-    font-weight:bold;
-    border:2px solid black;
-}
-
-#button input:hover{
-    background-color:#666666;
-}
-
-#button input:active{
-    background-color:black;
 }
 

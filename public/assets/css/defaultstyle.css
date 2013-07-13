@@ -42,6 +42,7 @@
  
  /* Links and Images */
  a, a:link, a:visited, a:active, a:hover {
+ text-align:center;
  text-decoration: underline;
  }
  img {
