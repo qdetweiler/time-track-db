@@ -190,8 +190,12 @@ div.content_wrapper {
     margin:auto;
 }
 
-.error_msg {
-    margin:5px;
+div.error_wrapper {
+    text-align:left;
+    margin:2px 0px 20px 0px;
+}
+
+div.error_wrapper p{
     color:red;
     font-size:75%;
 }

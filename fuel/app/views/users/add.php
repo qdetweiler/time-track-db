@@ -15,7 +15,7 @@
         <div class='field'>
             <input type='text' name='fname' value='<?php if(isset($fname))echo$fname?>'/>
         </div>
-        <div class='error'>
+        <div class='error_wrapper'>
             <p><?php if(isset($error['fname']))echo $error['fname']?></p>
         </div>
     </div>
@@ -26,7 +26,7 @@
         <div class='field'>
             <input type='text' name='lname' value='<?php if(isset($lname))echo$lname?>'/>
         </div>
-        <div class='error'>
+        <div class='error_wrapper'>
             <p><?php if(isset($error['lname']))echo $error['lname']?></p>
         </div>
     </div>
@@ -37,7 +37,7 @@
         <div class='field'>
             <input type='text' name='email' value='<?php if(isset($email))echo$email?>'/>
         </div>
-        <div class='error'>
+        <div class='error_wrapper'>
             <p><?php if(isset($error['email']))echo $error['email']?></p>
         </div>
     </div>
@@ -48,7 +48,7 @@
         <div class='field'>
             <input type='text' name='username' value='<?php if(isset($username))echo$username?>'/>
         </div>
-        <div class='error'>
+        <div class='error_wrapper'>
             <p><?php if(isset($error['username']))echo $error['username']?></p>
         </div>
     </div>

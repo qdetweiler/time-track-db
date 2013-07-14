@@ -21,7 +21,7 @@
                 <input type='password' name='newpass2' value=''/>
             </div>
             <?php if(isset($errormsg)):?>
-            <div class='error_msg'>
+            <div class='error_wrapper'>
                 <p><?php echo $errormsg?></p>
             </div>
             <?php endif ?>
