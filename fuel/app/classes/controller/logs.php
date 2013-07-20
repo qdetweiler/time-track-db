@@ -283,15 +283,12 @@ class Controller_Logs extends Controller_Template {
      */
     public function action_logtable(){
         
-        //PHP_Console::log(Input::all());
-        
         //get period information
         $period_start = Input::post('period');
         $period_end = $this->get_period_end($period_start);
         
         //retrieve user / users
         $user = Input::post('user');
-        //PHP_Console::log($user);
         if(is_null($user)){
             $id = Input::post('id');
             $user_list[] = Model_User::find($id);
@@ -303,8 +300,6 @@ class Controller_Logs extends Controller_Template {
             $user_list[] = Model_User::find($user);
         }
         
-        //PHP_Console::log($user_list);
-        //PHP_Console::log(count($user_list));
         
         //set whether or not to round
         $round = (!is_null(Input::post('round'))) ? true : false;
@@ -355,9 +350,6 @@ class Controller_Logs extends Controller_Template {
                 
             }
             
-            //PHP_Console::log(count($timelogs));
-            //PHP_Console::log($timelogs);
-            
             //split timelogs by days
             list($days, $overall_total) = $this->split_into_days($period_start, $timelogs, $round);
             
@@ -394,11 +386,8 @@ class Controller_Logs extends Controller_Template {
      */
     private function split_into_days($start_day, $timelogs, $round){
         
-        //PHP_Console::log(date('m/d', $start_day));
-        
         //end day
         $end_day = strtotime("+ ".\Config::get('timetrack.period_length')." -1 day", $start_day);
-        //PHP_Console::log(date('m/d', $end_day));
         
         //setup control variables
         $curr_day = $start_day;//12am on first day
@@ -413,7 +402,6 @@ class Controller_Logs extends Controller_Template {
         //loop through all the days in the time period
         while($curr_day <= $end_day){
             
-            //PHP_Console::log(date("m/d/y", $curr_day));
             
             //setup the day
             $day = array();
@@ -499,7 +487,6 @@ class Controller_Logs extends Controller_Template {
         //format overall total
         $overall_total = ($overall_total == 0) ? '' : Util::sec2hms($overall_total);
         
-        //PHP_Console::log($days);
         return array($days, $overall_total);
     }
     

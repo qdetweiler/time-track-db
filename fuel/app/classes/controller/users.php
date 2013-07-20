@@ -209,7 +209,6 @@ class Controller_Users extends Controller_Template {
         $validator->set_message('unique_email', 'This email account has already been used.');
         $validator->set_message('valid_email', 'Invalid email address.');
         $validator->set_message('name_requirements', ':label is invalid');
-        
         return $validator;
         
     }
@@ -219,10 +218,9 @@ class Controller_Users extends Controller_Template {
      */
     public function action_reset_pass(){
         
-        //make sure user is authenticated
-        $id_info = Auth::get_user_id();
-        $id = $id_info[1];
-        if(!$id){
+        //get id for reset from the session
+        $id = Session::get('reset_id');
+        if(is_null($id)){
             Response::redirect('root/home');
         }
         
@@ -235,9 +233,6 @@ class Controller_Users extends Controller_Template {
             $oldpass = trim(Input::post('oldpass'));
             $newpass1 = trim(Input::post('newpass1'));
             $newpass2 = trim(Input::post('newpass2'));
-            //PHP_Console::log($oldpass);
-            //PHP_Console::log($newpass1);
-            //PHP_Console::log(empty($oldpass));
             
             //make sure fields are filled out
             if(empty($oldpass) || empty($newpass1) || empty($newpass2)){
@@ -268,8 +263,9 @@ class Controller_Users extends Controller_Template {
             }
             
             if($valid){
-                Auth::change_password($oldpass, $newpass1);
-                Auth::login($user->username, $newpass1);
+                Session::delete('reset_id');
+                $val = Auth::change_password($oldpass, $newpass1, $user->username);
+                $val2 = Auth::login($user->username, $newpass1);
                 $user->password_expiration = strtotime("+ ".\Config::get('timetrack.password_lifespan'), time());
                 $user->save();
                 Response::redirect('root/home');

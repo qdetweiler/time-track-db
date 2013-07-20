@@ -266,3 +266,9 @@ div.field_set select {
     font-size:90%;
     margin:10px;
 }
+
+.grey_box{
+    border:1px solid #cccccc;
+    margin:auto;
+    text-align:center;
+}

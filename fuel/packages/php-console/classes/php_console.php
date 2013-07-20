@@ -22,6 +22,9 @@ class PHP_Console {
 	// \PHP_Console::log(array('foo', 'bar'), 'Welcome Controller');
 	public static function log($message, $tags = 'debug')
 	{
+            
+            
+            
 		if ( ! static::_is_dev())
 		{
 			return;

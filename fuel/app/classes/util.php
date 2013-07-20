@@ -10,9 +10,7 @@ class Util {
     public static function roundToInterval($time, $interval){
         
         $quotient = ((integer)floor($time/$interval));
-        //PHP_Console::log($quotient);
         $remainder = $time%$interval;
-        //PHP_Console::log($remainder);
         
         if($remainder < ($interval/2)){
             return $quotient*$interval;
@@ -34,9 +32,7 @@ class Util {
     public static function roundToThreshold($time, $interval, $threshold){
         
         $quotient = ((integer)floor($time/$interval));
-        //PHP_Console::log($quotient);
         $remainder = $time%$interval;
-        //PHP_Console::log($remainder);
         
         if($remainder < ($threshold)){
             return $quotient*$interval;

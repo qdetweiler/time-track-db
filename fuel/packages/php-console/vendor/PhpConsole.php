@@ -49,6 +49,7 @@ class PhpConsole {
 	}
 
 	protected function handle(PhpConsoleEvent $event) {
+            
 		if(self::$ignoreRepeatedEvents) {
 			$eventHash = md5($event->message . $event->file . $event->line);
 			if(in_array($eventHash, $this->handledMessagesHashes)) {
@@ -312,5 +313,7 @@ class PhpConsoleEvent {
 }
 
 function debug($message, $tags = 'debug') {
+    //getting this far
 	PhpConsole::debug($message, $tags);
+        //PHP_Console::log($unknown);
 }

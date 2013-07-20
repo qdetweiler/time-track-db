@@ -14,16 +14,15 @@ class Controller_Root extends Controller_Template{
      * used for logging in
      */
     public function action_index(){
-        
+
         //if user is already logged in, direct to homepage
         $user_id = Auth::get_user_id();
-        //PHP_Console::log($user_id);
         if($user_id[1] != 0){
             Response::redirect('root/home');
         }
         
         //otherwise, build login page
-        $this->template->content = View::forge('root/index');
+       $this->template->content = View::forge('root/index');
         
     }
     
@@ -50,9 +49,6 @@ class Controller_Root extends Controller_Template{
                 'or' => array('email', $username),
             ),
         ));
-        
-//        PHP_Console::log($username);
-//        PHP_Console::log($user);
         
         $locked = false; //flag
         
@@ -84,7 +80,6 @@ class Controller_Root extends Controller_Template{
                 
                 //if last login attempt was a while ago, reset attempt counter
                 if(($user->last_attempt != 0) &&(($user->last_attempt + 60*\Config::get('timetrack.lock_time')) < $time)){
-                    //PHP_Console::log("last attempt a while ago");
                     $user->last_attempt = 0;
                     $user->num_attempts = 0;
                     $user->save();
@@ -112,6 +107,8 @@ class Controller_Root extends Controller_Template{
             //password requires a change
             if($user->password_expiration == 0 
                     || $user->password_expiration > strtotime("+ ".\Config::get('timetrack.password_lifespan'),time())){
+                Auth::logout();
+                Session::set('reset_id',$user->id);
                 Response::redirect('users/reset_pass');
             }
             
@@ -180,7 +177,6 @@ class Controller_Root extends Controller_Template{
         if($id == 0){
             Response::redirect('root/index');
         }
-        //PHP_Console::log($id);
         
         //there is a valid user
         $clocked_in = Model_User::find($id)->clocked_in;
@@ -217,7 +213,6 @@ class Controller_Root extends Controller_Template{
         $log = Model_Timelog::forge();
         $log->user_id = $id;
         $log->clockin = time();
-        //PHP_Console::log(date('ga i', $log->clockin));
         $log->save();
         
         //set user to clocked in
@@ -257,7 +252,6 @@ class Controller_Root extends Controller_Template{
         
 
         $time = time();
-        //PHP_Console::log(date('ga i', $time));
         
         //if it has been less than LOG_INTERVAL minutes since clockin, just
         //delete the record to clear out the interval
@@ -270,8 +264,6 @@ class Controller_Root extends Controller_Template{
             //if this log is on a different day than the previous one,
             //split it into multiple logs
             while(date('d/m/y', $time) != date('d/m/y', $log->clockin)){
-                PHP_Console::log(date('d/m/y', $time));
-                PHP_Console::log(date('d/m/y', $log->clockin));
                 
                 $prev_day = $log->clockin;
                 $log->clockout = strtotime('tomorrow - 1 sec', $log->clockin);
