@@ -7,8 +7,6 @@
 
 class Controller_Logs extends Controller_Template {
 
-    const DATE_FORMAT = 'm/d/y';
-
     /**
      * Build the page responsible for enabling user to view logs
      * 
@@ -53,7 +51,8 @@ class Controller_Logs extends Controller_Template {
         }
         
         //get data range
-        $data['range'] = $this->get_range($data['selected_id']);
+        //$data['range'] = $this->get_range($data['selected_id']); //get range for only specified user
+        $data['range'] = $this->get_range('all');
 
         //setup users
         $users = Model_User::find('all');
@@ -70,12 +69,15 @@ class Controller_Logs extends Controller_Template {
     }
     
     /**
-     * Return range data
-     * @param type $id
-     * @return type
+     * Return a map representing the set of pay periods available for
+     * the given user or for all users
+     * @param type mixed - id of user if specified or string 'all' for all users
+     * @return type map of pay period ranges
      */
     private function get_range($id){
         
+        //get all the appropriate logs for either the given user
+        //or all users depending on the id passed in
         if($id == 'all'){
             $first_log = Model_Timelog::find('first', array(
                 'order_by' => array('clockin' => 'asc'),
@@ -274,18 +276,14 @@ class Controller_Logs extends Controller_Template {
      * @return type
      */
     private function date_range_string($start_stamp, $end_stamp){
-        return date(self::DATE_FORMAT, $start_stamp)." - ".date(self::DATE_FORMAT, $end_stamp);
+        $format = \Config::get('timetrack.range_date_format');
+        return date($format, $start_stamp)." - ".date($format, $end_stamp);
     }
     
-    /**
-     * logtable returns the partial view containing tabular information
-     * about logs
-     */
-    public function action_logtable(){
+    public function action_logtable2(){
         
         //get period information
         $period_start = Input::post('period');
-        $period_end = $this->get_period_end($period_start);
         
         //retrieve user / users
         $user = Input::post('user');
@@ -300,7 +298,6 @@ class Controller_Logs extends Controller_Template {
             $user_list[] = Model_User::find($user);
         }
         
-        
         //set whether or not to round
         $round = (!is_null(Input::post('round'))) ? true : false;
         
@@ -308,55 +305,12 @@ class Controller_Logs extends Controller_Template {
         //the view
         foreach($user_list as $u){
             
-            //fetch logs for the current period
-            $timelogs = Model_Timelog::find('all', array(
-                'where' => array(
-                    array('user_id', $u->id),
-                    array('clockin','>=',$period_start),
-                    array('clockout', '<=', $period_end),
-                ),
-                'order_by' => array('clockin' => 'asc'),
-            ));
-            
-            //the above will not include a log with a null end time
-            //we need to grab such a record ourselves
-            $last_log = Model_Timelog::find('last', array(
-                'where' => array(
-                    array('clockin', '<=', $period_end),
-                    array('user_id', $u->id),
-                ),
-            ));
-            
-            //there is a last log
-            if(!is_null($last_log)){
-                
-                //there are no logs except one with a null clockout
-                if(empty($timelogs)){
-                    array_push($timelogs, $last_log);
-                    
-                //there is at least one log which may be the same
-                //as the last log we fetched
-                } else {
-                    $last_element = end($timelogs);
-                    reset($timelogs);
-                    
-                    //the last log in the timelogs list is not the same
-                    //as the last log we fetched. This means there was
-                    //a log with a null clockout
-                    if($last_log->id != $last_element->id){
-                        array_push($timelogs, $last_log);
-                    }
-                }
-                
-            }
-            
-            //split timelogs by days
-            list($days, $overall_total) = $this->split_into_days($period_start, $timelogs, $round);
+            //retrieve logs for this user
+            list($days, $overall_total) = $this->fetch_logs_for_period($u->id, $round, $period_start);
             
             //setup data for user
             $usr['days'] = $days;
-            $usr['num_logs'] = count($timelogs);
-            $usr['total'] = $overall_total;
+            $usr['total'] = Util::sec2hms($overall_total);
             $usr['name'] = $u->fname." ".$u->lname;
             $users[] = $usr;
         }
@@ -365,130 +319,201 @@ class Controller_Logs extends Controller_Template {
         $data['display_type'] = Input::post('display_type');
         
         //return the view
-        return new Response(View::forge('logs/logtable', $data));
+        return new Response(View::forge('logs/logtable2', $data));
+        
     }
     
     /**
-     * Split a set of timelogs into days
+     * Fetch an array of formatted log data containing all the logs for the
+     * specified user split into days and the total amount of time logged
      * 
-     * Returns an array with the following format
+     * Data is returned in the following format:
+     * array(*array of DayLogContainer objects*, *total time recorded*)
      * 
-     * [0] => [0] =>    'string' => Sunday-Monday,
-     *                  'logs'      => [0]  => 'start' => timestamp,
-     *                                      => 'end'   => timestamp
-     *                  'total'  => Total time
-     * [1] => overall_total
-     * 
-     * 
-     * @param type $start_day
-     * @param type $timelogs
-     * @param type $round
+     * @param type $id - id of the user
+     * @param type $round - true to round values, false to leave un-rounded
+     * @param type $start - 12am on the first day of the period
      */
-    private function split_into_days($start_day, $timelogs, $round){
+    private function fetch_logs_for_period($id, $round, $start){
         
-        //end day
-        $end_day = strtotime("+ ".\Config::get('timetrack.period_length')." -1 day", $start_day);
+        //first day in the period
+        $start_day = $start;
         
-        //setup control variables
-        $curr_day = $start_day;//12am on first day
-        $curr_day_end = strtotime("+ 1 day - 1 second",$curr_day);//11:59:59pm of first day
-
-        //track overall total for the time period
+        //last day of the period
+        $end_day = strtotime("+ ".\Config::get
+                ('timetrack.period_length')." -1 day", $start_day);
+        
         $overall_total = 0;
+        $curr_day_start = $start_day;
         
-        //setup first timelog
-        $curr_timelog = array_shift($timelogs);
-
-        //loop through all the days in the time period
-        while($curr_day <= $end_day){
+        //cycle through days and grab all the logs for the user for that
+        //day
+        while($curr_day_start <= $end_day){
             
+            //fetch logs for the day
+            $l = $this->fetch_logs_for_day($id, $round, $curr_day_start);
+            $day_logs[] = $l;
+            $overall_total += $l->total_time;
             
-            //setup the day
-            $day = array();
-            $day['string'] = date(\Config::get('timetrack.log_date_format'),$curr_day);
-            $day['logs'] = array();
-            $day['total'] = 0;
-
-            while($curr_timelog != null //we haven't reached the end of the logs
-                    && !is_null($curr_timelog->clockout) //timelog has a clockout time
-                    && $curr_timelog->clockout <= $curr_day_end){  //only include timelogs that finish on the current day
+            //if the user was still clocked in on the day fetched, consume the
+            //rest of the days
+            if($l->clocked_out == false){
                 
-                //if current log belongs to the current day, add an entry to
-                //to the day's logs array
+                //move to the next day
+                $curr_day_start += (24*60*60);//add one day in seconds
                 
-                //get rounded values
-                $clockin_rounded = Util::roundToInterval($curr_timelog->clockin, \Config::get('timetrack.log_interval')*60);
-                $clockout_rounded = Util::roundToInterval($curr_timelog->clockout, \Config::get('timetrack.log_interval')*60);
-                
-                //we are not rounding
-                if(!$round){
-                    array_push($day['logs'],array(
-                        'start' => date(\Config::get('timetrack.log_time_format'),$curr_timelog->clockin),
-                        'end' => date(\Config::get('timetrack.log_time_format'),$curr_timelog->clockout),
-                    ));
+                while($curr_day_start <= $end_day){
                     
-                //we are rounding
-                } else {
-                    array_push($day['logs'],array(
-                        'start' => date(\Config::get('timetrack.log_time_format'),$clockin_rounded),
-                        'end' => date(\Config::get('timetrack.log_time_format'),$clockout_rounded),
-                    ));
+                    $dlc = new DayLogContainer();
+                    $dlc->clocked_out = false;
+                    $dlc->day_start = $curr_day_start;
+                    $dlc->day_label = date(\Config::get
+                        ('timetrack.log_date_format'), $curr_day_start);
+                    $dlc->total_time_string = "N/A";
+                    $day_logs[] = $dlc;
+                    $curr_day_start += (24*60*60);//add one day in seconds
+                    
                 }
-                
-                //add to the total
-                $day['total']+= $clockout_rounded - $clockin_rounded;
-                $overall_total += $clockout_rounded - $clockin_rounded;
-                
-                //go on to next timelog
-                $curr_timelog = array_shift($timelogs);
             }
             
-            //if curr timelog has a null clockout, add a special entry to
-            //the logs
-            if(!is_null($curr_timelog) //there is still another log
-                    && $curr_timelog->clockin >= $curr_day && $curr_timelog->clockin <= $curr_day_end //the current log belongs to the current day
-                    && is_null($curr_timelog['clockout'])){ //the current log does not have a clockout time
-                
-                if($round){
-                    $clockin_rounded = Util::roundToInterval($curr_timelog->clockin, \Config::get('timetrack.log_interval')*60);
-                    array_push($day['logs'], array(
-                       'start' => date(\Config::get('timetrack.log_time_format'), $clockin_rounded),
-                       'end' => "still clocked in",
-                    ));
-                } else {
-                    array_push($day['logs'], array(
-                       'start' => date(\Config::get('timetrack.log_time_format'), $curr_timelog->clockin),
-                        'end' => 'still clocked in',
-                    ));
-                }
-            } else if (!is_null($curr_timelog) //there is still another log
-                    && $curr_timelog->clockin < $curr_day //the current log was started on a previous day
-                    && is_null($curr_timelog['clockout'])){ //the current log does not have a clockout time
-                
-                array_push($day['logs'], array(
-                    'start' => 'still clocked in',
-                    'end' => 'still clocked in',
-                ));
-                
-            }
-        
-            //format day total
-            $day['total'] = ($day['total']==0) ? "0" : Util::sec2hms($day['total']);
-            
-            //add day to days
-            $days[] = $day;
-            
-            //increment control variables
-            $curr_day = strtotime("+ 1 day", $curr_day);
-            $curr_day_end = strtotime(" + 1 day - 1 second", $curr_day);
-            
+            $curr_day_start += (24*60*60);//add one day in seconds
         }
         
-        //format overall total
-        $overall_total = ($overall_total == 0) ? '' : Util::sec2hms($overall_total);
-        
-        return array($days, $overall_total);
+        return array($day_logs, $overall_total);
     }
     
+    /**
+     * Fetch all the logs for the given user that fit on the day specified
+     * @param type $id - id of the user
+     * @param type $round - whether or not to round logs
+     * @param type $day_start - timestamp that equals 12am on the desired day
+     * @return type
+     */
+    private function fetch_logs_for_day($id, $round, $day_start){
+        
+        //end of the day
+        $day_end = $day_start + (24*60*60)-1; //one day minus one second in seconds
+        
+        //variable to hold the logs
+        $day_log = new DayLogContainer();
+        $day_log->day_start = $day_start;
+        $day_log->day_label = date(\Config::get
+                ('timetrack.log_date_format'), $day_start);
+            
+        //fetch all logs for the day that have been clocked out
+        $logs_for_day = Model_Timelog::find('all', array(
+            'where' => array(
+                array('user_id', $id),
+                array('clockin','>=',$day_start),
+                array('clockout', '<=', $day_end),
+            ),
+            'order_by' => array('clockin' => 'asc'),
+        ));
+
+        //fetch any logs for the day that have not been clocked out
+        $log_sans_clockout = Model_Timelog::find('last', array(
+            'where' => array(
+                array('user_id', $id),
+                array('clockin', '>=', $day_start),
+                array('clockin', '<=', $day_end),
+            ),
+        ));
+        
+        //there are full logs for this day
+        if(!is_null($logs_for_day)){
+
+            $first = true;
+            foreach($logs_for_day as $log){
+
+                //get rounded values
+                $clockin_rounded 
+                        = Util::roundToInterval($log->clockin, 
+                                \Config::get('timetrack.log_interval')*60);
+                $clockout_rounded 
+                        = Util::roundToInterval($log->clockout, 
+                                \Config::get('timetrack.log_interval')*60);
+
+                //set clockin and clockout
+                $clockin = ($round) ? $clockin_rounded : $log->clockin;
+                $clockout = ($round) ? $clockout_rounded : $log->clockout;
+
+                //store information about the log
+                $lg = new LogInfo();
+                $lg->id = $log->id;
+                $lg->clockin = $clockin;
+                $lg->clockout = $clockout;
+                $lg->clockin_string = date(\Config::get('timetrack.log_time_format'), $clockin);
+                $lg->clockout_string = date(\Config::get('timetrack.log_time_format'), $clockout);
+                $lg->time = $clockout_rounded - $clockin_rounded;
+                $lg->time_string = Util::sec2hms($lg->time);
+                
+                //first log for the day
+                if($first){
+
+                    $day_log->first_log = $lg;
+                    $first = false;
+
+                //any additional logs
+                } else {
+                    $day_log->additional_logs[] = $lg;
+                }
+                
+                //add log time to the total time
+                $day_log->total_time += $lg->time;
+                
+            }
+
+        }//end processing full logs for the day
+
+        //set string representing total of full logs
+        $day_log->total_time_string = Util::sec2hms($day_log->total_time);
+        
+        //there is a partial log for this day
+        if(!is_null($log_sans_clockout)){
+
+            $dl = new LogInfo();
+            $dl->id = $log->id;
+            $dl->clockin = $clockin;
+            $dl->clockin_string = date(\Config::get('timetrack.log_time_format'), $clockin);
+            $dl->clockout = 0;
+            $dl->clockout_string = 'Not Clocked Out';
+            $dl->time = 0;
+            $dl->time_string = 'N/A';
+            
+            $day_log->additional_logs[] = $dl;
+            $day_log->clocked_out = false;
+
+        }
+        
+        return $day_log;
+    }
+    
+    
+    
+}//end class
+
+class DayLogContainer{
+    
+    //data contained in a LogInfo object
+    public $day_start = 0;          //timestamp equaling 12am on the day
+    public $day_label = '';         //label for the day
+    public $first_log = null;       //first log of the day
+    public $additional_logs = array();    //any additional logs for the day
+    public $total_time = 0;         //total amount of time recorded on the day
+    public $total_time_string = ''; //string representing total time recorded
+    public $clocked_out = true;     //true unless the user is still logged in
+    
+}
+
+class LogInfo{
+  
+    //data tracked for a log
+    public $id = 0;                 //id of the log
+    public $clockin = 0;            //log clockin timestamp
+    public $clockout = 0;           //log clockout timestamp
+    public $clockin_string = '';    //string representing log clockin
+    public $clockout_string = '';   //string representing log clockout
+    public $time = 0;               //lenth of time represented by log
+    public $time_string = '';       //string representing log time
 }
 ?>

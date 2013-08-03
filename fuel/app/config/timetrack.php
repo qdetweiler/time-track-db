@@ -28,6 +28,9 @@ return array(
      * Log related configuration options
      */
     
+    //first date of first recorded pay period (date-time)
+    'log_start_date' => '2013-06-30',
+    
     //minimum interval allowed for a time log in minutes
     'log_interval' => 15,
     
@@ -40,13 +43,14 @@ return array(
     //length of a period
     'period_length' => '1 week',
     
+    //format for the display of period start and end dates
+    'range_date_format' => 'm/d/y',
+    
     //format for times used in log table
     'log_time_format' => 'g:i a',
     
     //format for dates used in the log table
     'log_date_format' => 'm / d',
-    
-    
     
 );
 

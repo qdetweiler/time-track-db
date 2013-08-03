@@ -67,8 +67,8 @@ class Controller_Users extends Controller_Template {
                 $id = Auth::create_user($username, $temp_password, $email);
                 $user = Model_User::find($id);
                 $user->first_login = true;
-                $user->fname = $fname;
-                $user->lname = $lname;
+                $user->fname = ucfirst($fname);
+                $user->lname = ucfirst($lname);
                 $user->group = ($type=='admin') ? 100 : 1;
                 $user->save();
                 

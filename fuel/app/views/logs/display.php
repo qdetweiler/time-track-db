@@ -1,6 +1,6 @@
 <div id="wrapper">
     <div id="controls">
-        <form id='control_form' action='<?php echo Uri::create('logs/logtable')?>' method='post'>
+        <form id='control_form' action='<?php echo Uri::create('logs/logtable2')?>' method='post'>
         <input type='hidden' name='id' value='<?php echo $id?>'/>
             <span id='range_selection'>
                 <label>Period</label>
@@ -32,13 +32,13 @@
             <span id='round'>
                 <label>Display</label>
                 <select name='display_type'>
-                    <option value='all' selected>All Logs</option>
-                    <option value='day_totals'>Daily Totals</option>
+                    <option value='all' selected>Logs</option>
+                    <?php if(false):?><option value='day_totals'>Daily Totals</option><?php endif?>
                     <option value='period_totals'>Period Totals</option>
                 </select>
             </span>
             <span id='button'>
-                <input type='submit' name='submit' value='Go' <?php if(!count($range)) echo "disabled"?>/>
+                <input id="update_button" class="white_button" type='submit' name='submit' value='Update' <?php if(!count($range)) echo "disabled"?>/>
             </span>
         </form>
     </div>

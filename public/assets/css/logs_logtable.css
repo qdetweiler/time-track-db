@@ -22,15 +22,114 @@ tr, td {
 thead td{
     font-weight:bold;
     font-size:115%;
-    padding-bottom:15px;
 }
 
-thead #user_info {
+#col_titles td, #no_logs_msg {
+    padding-top:20px;
+    padding-bottom:10px;
+}
+
+#user_info {
+    border-bottom:1px solid #cccccc;
     font-size:125%;
-    background-color:#cccccc;
 }
 
 #overall_total {
     font-weight:bold;
     padding-top:15px;
+}
+
+#update_button{
+    padding-top:5px;
+    padding-bottom:5px;
+}
+
+.user_info {
+  margin-bottom:20px;
+}
+
+.divider {
+  padding-bottom:5px;
+}
+
+.head > h3 {
+  display:inline;
+}
+
+.day {
+  min-width:75px;
+  font-weight:bold;
+  float:left;
+  padding:5px;
+}
+
+.log_display .day {
+  min-width:75px;
+  padding: 5px;
+}
+
+.log_range {
+  min-width:200px;
+  margin-right:20px;
+  padding-left:5px;
+}
+
+.log_time {
+  min-width:100px;
+  margin-right:20px;
+    padding-left:5px;
+
+}
+
+.controls {
+  padding:5px;
+  min-width:40px;
+  padding-left:5px;
+}
+
+.log_display .controls, .add_log .controls {
+  font-size:80%;
+}
+
+.log_display, .add_log {
+  padding:2px 5px;
+}
+
+.day_display {
+  border:1px solid black;
+  margin-bottom:5px;
+}
+
+.a_log {
+  margin-left:85px;
+  padding:0px 3px;
+  border: 1px solid #e6e6e6;
+  border-radius: 10px;
+  font-size:90%;
+}
+
+.a_log_head {
+  margin-left:85px;
+  padding: 0px 3px;
+}
+
+.controls a {
+  margin-right:5px;
+}
+
+p.disabled_link {
+  color:grey;
+  text-decoration:none;
+}
+
+.total_display{
+  margin-top:20px;
+  margin-left:5px;
+}
+
+.name {
+  margin-bottom:10px;
+  border:1px solid black;
+  padding:3px;
+  text-align:center;
 }

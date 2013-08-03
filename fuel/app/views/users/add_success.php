@@ -27,7 +27,7 @@
     </div>
     <p>The following password can be used to authenticate the first time.  
             After initial login, user will be required to change his/her password.</p>
-    <div id='password_info'>
+    <div class="grey_box">
         <h3><?php echo $temp_password?></h3>
     </div>
 </div>

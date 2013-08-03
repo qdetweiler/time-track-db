@@ -213,6 +213,7 @@ class Controller_Root extends Controller_Template{
         $log = Model_Timelog::forge();
         $log->user_id = $id;
         $log->clockin = time();
+        $log->clockout = 0;
         $log->save();
         
         //set user to clocked in
@@ -239,17 +240,15 @@ class Controller_Root extends Controller_Template{
             Response::redirect('404');
         }
         
-        //load the most recent time log for this user (clocked out will be null)
+        //load the most recent time log for this user (clocked out will be 0)
         $id_info = Auth::get_user_id();
         $id = $id_info[1];
         $log = Model_Timelog::find('last', array(
                 'where' => array(
                     array('user_id', $id),
-                    array('clockout', null),
+                    array('clockout', 0),
                 )
         ));
-        
-        
 
         $time = time();
         
