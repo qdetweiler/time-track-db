@@ -8,38 +8,30 @@
 
 /*  HOME PAGE STYLES  */
 #clock_box {
-    display:table;
     margin-left:auto;
     margin-right:auto;
     margin-top:20px;
     min-width:200px;
-    max-width:300px;
-    height:100px;
+    max-width:275px;
     background-color:white;
     border-radius:15px;
     text-align:center;
 }
 
-.vertical_centered {
-    display:table-cell;
-    vertical-align:middle;
+#clock_button {
+  padding:8px;
+  width:275px;
+  font-size:2em;
 }
 
-#clock_box input {
-    width:125px;
-    height:50px;
-    border-radius:12px;
-    background-color:#59cb59;
-    border:none;
-    font-weight:bold;
+#clock_wrapper h3{
+  display:inline;
 }
 
-#clock_box input:hover {
-    background-color:#008000;
-    color:white;
-    cursor:pointer;
+#button_wrapper {
+  margin:15px 0px;
 }
 
-#clock_box input:active {
-    background-color:#59cb59;
+.rounded {
+  border-radius:5px;
 }

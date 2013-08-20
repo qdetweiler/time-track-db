@@ -14,9 +14,9 @@
 
 #controls {
     background:white;
-    border:3px solid black;
+    border:3px solid #251f55;
     padding:7px 7px;
-    margin-bottom:20px;
+    margin-bottom:10px;
 }
 
 #control_form span{

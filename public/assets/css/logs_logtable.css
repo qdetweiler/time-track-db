@@ -9,7 +9,7 @@ table{
     display:block;
     margin:auto;
     margin-top:20px;
-    border:3px solid black;
+    border:3px solid #251f55;
     background-color:white;
     padding:15px 10px;
     border-collapse:collapse;
@@ -77,7 +77,7 @@ thead td{
 .log_time {
   min-width:100px;
   margin-right:20px;
-    padding-left:5px;
+  padding:3px;
 
 }
 
@@ -96,7 +96,7 @@ thead td{
 }
 
 .day_display {
-  border:1px solid black;
+  border:1px solid #251f55;
   margin-bottom:5px;
 }
 
@@ -118,8 +118,10 @@ thead td{
 }
 
 p.disabled_link {
+  display:inline;
   color:grey;
   text-decoration:none;
+  margin-right:5px;
 }
 
 .total_display{
@@ -129,7 +131,31 @@ p.disabled_link {
 
 .name {
   margin-bottom:10px;
-  border:1px solid black;
+  border:1px solid #251f55;
   padding:3px;
   text-align:center;
+}
+
+.time_input {
+  display:inline;
+  max-width:5em;
+}
+
+.log_form_spn p , .add_log_form_spn p{
+  display:inline;
+}
+
+.log_range {
+  padding:3px;
+}
+
+.total_display_wrapper{
+  margin:10px 2px;
+  padding:5px;
+  border:1px solid #cccccc;
+}
+
+.pt_name {
+  display:inline-block;
+  min-width:250px;
 }

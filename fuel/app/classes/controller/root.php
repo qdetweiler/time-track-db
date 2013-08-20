@@ -183,13 +183,35 @@ class Controller_Root extends Controller_Template{
         if($clocked_in){
             $data['button_label'] = 'Clock Out';
             $data['action'] = Uri::create('root/clock_out');
+            
+            //data for showing user when they last clocked in
+            $last_log = Model_Timelog::find('last', array(
+                'where' => array(
+                    array('user_id', $id),
+                    array('clockout', 0),
+                )
+            ));
+            
+            $data['last_clock_s'] = 'Last Clocked In:  '
+                    .date(\Config::get('timetrack.last_clock_format'),$last_log->clockin);
         } else {
             $data['button_label'] = 'Clock In';
             $data['action'] = Uri::create('root/clock_in');
+            
+            //data for showing user when they last clocked out
+            $last_log = Model_Timelog::find('last', array(
+                'where' => array(
+                    array('user_id', $id),
+                )
+            ));
+            
+            $data['last_clock_s'] = 'Last Clocked Out:  '
+                    .date(\Config::get('timetrack.last_clock_format'),$last_log->clockout);
         }
         
         $this->template->title = 'Home';
         $this->template->page_css = array('home.css');
+        $this->template->page_js = array('root-home.js');
         $this->template->content = View::forge('root/home', $data);
         
     }
@@ -207,43 +229,62 @@ class Controller_Root extends Controller_Template{
             Response::redirect('404');
         }
         
-        //create a new clock_in lock for the current user
+        //create a new clock_in log for the current user
         $id_info = Auth::get_user_id();
         $id = $id_info[1];
-        $log = Model_Timelog::forge();
-        $log->user_id = $id;
-        $log->clockin = time();
-        $log->clockout = 0;
-        $log->save();
         
-        //set user to clocked in
-        $user = Model_User::find($id);
-        $user->clocked_in = 1;
-        $user->save();
+        $this->perform_clockin($id);
         
         //redirect to home
         Response::redirect('root/home');
         
     }
     
+    /**
+     * Complete a clockin for the specified user
+     * @param type $id
+     */
+    private function perform_clockin($id){
+      
+        $last_log = Model_Timelog::find('last', array(
+            'where' => array(
+                array('user_id' => $id),
+            ),
+        ));
+        
+        $time = time();
+        $interval = 60*\Config::get('timetrack.log_interval');
+
+        //less than a rounded time period has passed
+        if(!is_null($last_log) && Util::roundToInterval($last_log->clockout,$interval)
+                == Util::roundToInterval($time, $interval)){
+          
+          $last_log->clockout = 0;
+          $last_log->save();
+          
+        } else {
+
+          $log = Model_Timelog::forge();
+          $log->user_id = $id;
+          $log->clockin = time();
+          $log->clockout = 0;
+          $log->save();
+
+        }
+
+        //set user to clocked in
+        $user = Model_User::find($id);
+        $user->clocked_in = 1;
+        $user->save();
+    }
     
     /**
-     * Clock out the current user by either adding a clock out time to the
-     * current time log or removing the time log.
+     * Clock out the specified user
+     * @param type $id
      */
-    public function action_clock_out(){
-        
-        //protect from direct access
-        //only allow script to execute if reached by post
-        //and 'active_clock' is set
-        if(is_null(Input::post('activate_clock'))){
-            Response::redirect('404');
-        }
-        
-        //load the most recent time log for this user (clocked out will be 0)
-        $id_info = Auth::get_user_id();
-        $id = $id_info[1];
-        $log = Model_Timelog::find('last', array(
+    private function perform_clockout($id){
+      
+      $log = Model_Timelog::find('last', array(
                 'where' => array(
                     array('user_id', $id),
                     array('clockout', 0),
@@ -255,7 +296,8 @@ class Controller_Root extends Controller_Template{
         //if it has been less than LOG_INTERVAL minutes since clockin, just
         //delete the record to clear out the interval
         if($log->clockin+(60*\Config::get('timetrack.log_interval')) > $time){
-            $log->delete();
+            
+          $log->delete();
             
         //at least one LOG_INTERVAL has passed
         } else {
@@ -280,6 +322,54 @@ class Controller_Root extends Controller_Template{
         $user = Model_User::find($id);
         $user->clocked_in = 0;
         $user->save();
+      
+    }
+    
+    /**
+     * Change the status of a specified user (clocked in or clocked out)
+     * This method should only work if the current logged in user
+     * is an admin
+     */
+    public function action_change_status(){
+      
+        //make sure user is authenticated and an admin
+        if(!Auth::member(\Config::get('timetrack.admin_group'))){
+            Response::redirect('root/home');
+        }
+        
+        $id = Input::post('id');
+        $user = Model_User::find($id);
+        
+        if($user->clocked_in){
+          $this->perform_clockout($id);
+        } else {
+          $this->perform_clockin($id);
+        }
+        
+        return Response::forge(json_encode(true));
+      
+    }
+    
+    
+    /**
+     * Clock out the current user by either adding a clock out time to the
+     * current time log or removing the time log.
+     */
+    public function action_clock_out(){
+        
+        //protect from direct access
+        //only allow script to execute if reached by post
+        //and 'active_clock' is set
+        if(is_null(Input::post('activate_clock'))){
+            Response::redirect('404');
+        }
+        
+        //load the most recent time log for this user (clocked out will be 0)
+        $id_info = Auth::get_user_id();
+        $id = $id_info[1];
+        
+        $this->perform_clockout($id);
+        
         Response::redirect('root/home');
         
     }
@@ -308,6 +398,17 @@ class Controller_Root extends Controller_Template{
         //redirect to login page
         Response::redirect('root/index');
         
+    }
+    
+    /**
+     * return server's current time as a formatted string
+     */
+    public function action_time(){
+      
+      $time = time();
+      $time_s = date(\Config::get('timetrack.clock_format'), $time);
+      return Response::forge(json_encode(array('time' => $time_s, 'seconds' => date('s', $time))));
+      
     }
     
     

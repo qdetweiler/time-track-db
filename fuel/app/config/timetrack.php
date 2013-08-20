@@ -15,6 +15,11 @@ return array(
     //amount of minutes to lock a user account after max_attempts wrong logins
     'lock_time' => 15,
   
+    //format of clock showed on clockin / clockout page
+    'clock_format' => 'g:i a',
+    
+    //last clocked in/out notification format
+    'last_clock_format' => 'M d, g:i a',
     
     /**
      * User related configuration options

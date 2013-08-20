@@ -10,7 +10,7 @@ class Model_Timelog extends \Orm\Model
 		'clockout',
 		'created_at',
 		'updated_at',
-                //'deleted_at',
+        //'deleted_at',
 	);
 
 	protected static $_observers = array(

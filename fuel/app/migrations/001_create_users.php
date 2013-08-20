@@ -18,6 +18,9 @@ class Create_users
                 \DBUtil::create_table($table, array(
                         'id' => array('type' => 'int', 'constraint' => 11, 'auto_increment' => true),
                         'username' => array('type' => 'varchar', 'constraint' => 50),
+                        'fname' => array('type' => 'varchar', 'constraint' => 255),
+                        'lname' => array('type' => 'varchar', 'constraint' => 255),
+                        'password_expiration' => array('type' => 'int', 'constraint' => 11, 'default' => 0),
                         'password' => array('type' => 'varchar', 'constraint' => 255),
                         'group' => array('type' => 'int', 'constraint' => 11, 'default' => 1),
                         'email' => array('type' => 'varchar', 'constraint' => 255),
@@ -26,7 +29,6 @@ class Create_users
                         'profile_fields' => array('type' => 'text'),
                         'created_at' => array('type' => 'int', 'constraint' => 11, 'default' => 0),
                         'updated_at' => array('type' => 'int', 'constraint' => 11, 'default' => 0),
-                        'deleted_at' => array('type' => 'int', 'constraint' => 11,'null'=>true),
                         'account_locked' => array('type' => 'int', 'constraint' => 11, 'default' => 0),
                         'last_attempt' => array('type' => 'int', 'constraint' => 11, 'default' => 0),
                         'num_attempts' => array('type' => 'int', 'constraint' => 11, 'default' => 0),

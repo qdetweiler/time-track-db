@@ -32,7 +32,10 @@
                 <p><?php if($user->group == 100){echo "Administrator";}else{echo "Standard";}?></p>
             </td>
             <td class='status'>
-                <p class='<?php echo $user->status_class?>'><?php echo $user->status ?></p>
+              <form name='status_frm' method='post' action='<?php echo Uri::create('root/change_status')?>'>
+                <input type='hidden' name='id' value='<?php echo $user->id?>'/>
+                <a class='<?php echo $user->status_class?>' href='#'><?php echo $user->status ?></a>
+              </form>
             </td>
             <td class='options_logs'>
                 <a href='<?php echo Uri::create('logs/display?id='.$user->id)?>'>Logs</a>
@@ -46,7 +49,7 @@
             <?php if($user->id != $currid):?>
                 <a href='<?php echo Uri::create('users/remove?id='.$user->id)?>'>Remove</a>
             <?php else :?>
-                <a class='disabled'>Remove</a>
+                <p class='disabled'>Remove</p>
             <?php endif?>
             </td>
             

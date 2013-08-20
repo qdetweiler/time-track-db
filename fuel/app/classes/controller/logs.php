@@ -14,7 +14,6 @@ class Controller_Logs extends Controller_Template {
      */
     public function action_display(){
         
-        //make sure there is an authenticated user
         //make sure user is authenticated
         $id_info = Auth::get_user_id();
         $id = $id_info[1];
@@ -29,9 +28,14 @@ class Controller_Logs extends Controller_Template {
             $this->standard_display($id);
         }
         
-        //setup css for control section
-        $this->template->page_css = array('logs_display.css','logs_logtable.css');
-        $this->template->page_js = array('logs-display.js', 'jquery.form.min.js');
+        //setup css for page
+        $this->template->page_css = array('logs_display.css','logs_logtable.css'
+            , 'jquery-ui-1.10.3.custom.min.css');
+        
+        //setup javascript for page
+        $this->template->page_js = array('logs-display.js', 'jquery.form.min.js'
+            ,'jquery-ui-1.10.3.custom.min.js','jquery-ui-timepicker-addon.js'
+            ,'logs-logtable.js');
     }
     
     /**
@@ -82,9 +86,9 @@ class Controller_Logs extends Controller_Template {
             $first_log = Model_Timelog::find('first', array(
                 'order_by' => array('clockin' => 'asc'),
             ));
-            $last_log = Model_Timelog::find('first', array(
-                'order_by' => array('clockin' => 'desc'),
-            ));
+//            $last_log = Model_Timelog::find('first', array(
+//                'order_by' => array('clockin' => 'desc'),
+//            ));
         } else {
             $first_log = Model_Timelog::find('first', array(
                 'where' => array(
@@ -92,12 +96,12 @@ class Controller_Logs extends Controller_Template {
                 ),
                 'order_by' => array('clockin' => 'asc'),
             ));
-            $last_log = Model_Timelog::find('first', array(
-                'where' => array(
-                    array('user_id', $id),
-                ),
-                'order_by' => array('clockin' => 'desc'),
-            ));
+//            $last_log = Model_Timelog::find('first', array(
+//                'where' => array(
+//                    array('user_id', $id),
+//                ),
+//                'order_by' => array('clockin' => 'desc'),
+//            ));
         }
         
         //there are no logs for this user
@@ -106,8 +110,11 @@ class Controller_Logs extends Controller_Template {
             
         //there are logs for this user
         } else {
-            $end_log = $last_log->clockout == null ? $last_log->clockin : $last_log->clockout;
-            $range = $this->get_date_range($first_log->clockin, $end_log);
+//            $end_log = $last_log->clockout == null ? $last_log->clockin : $last_log->clockout;
+          
+            //range should end today
+            $end_time = time();
+            $range = $this->get_date_range($first_log->clockin, $end_time);
         }
         
         return $range;
@@ -135,69 +142,73 @@ class Controller_Logs extends Controller_Template {
     
     
     public function action_test(){
+      
+        $id = 3;
+      
+        $timelog = Model_Timelog::forge();
+        $timelog->user_id = $id;
+        $timelog->clockin = strtotime("last Monday 8:23am");
+        $timelog->clockout = strtotime("last Monday 12:23pm");
+        $timelog->save();
         
-//        $timelog = Model_Timelog::forge();
-//        $timelog->user_id = 1;
-//        $timelog->clockin = strtotime("Monday 8:23am");
-//        $timelog->clockout = strtotime("Monday 12:23pm");
-//        $timelog->save();
-//        
-//                $timelog = Model_Timelog::forge();
-//        $timelog->user_id = 1;
-//        $timelog->clockin = strtotime("Monday 1:38pm");
-//        $timelog->clockout = strtotime("Monday 5:03pm");
-//        $timelog->save();
-//        
-//                $timelog = Model_Timelog::forge();
-//        $timelog->user_id = 1;
-//        $timelog->clockin = strtotime("Tuesday 8:02am");
-//        $timelog->clockout = strtotime("Tuesday 9:16pm");
-//        $timelog->save();
-//        
-//                $timelog = Model_Timelog::forge();
-//        $timelog->user_id = 1;
-//        $timelog->clockin = strtotime("Thursday 8:29am");
-//        $timelog->clockout = strtotime("Thursday 1:18pm");
-//        $timelog->save();
-//        
-//                $timelog = Model_Timelog::forge();
-//        $timelog->user_id = 1;
-//        $timelog->clockin = strtotime("Thursday 1:45pm");
-//        $timelog->clockout = strtotime("Thursday 3:30pm");
-//        $timelog->save();
-//        
-//                $timelog = Model_Timelog::forge();
-//        $timelog->user_id = 1;
-//        $timelog->clockin = strtotime("Thursday 4:15pm");
-//        $timelog->clockout = strtotime("Thursday 6:23pm");
-//        $timelog->save();
-//        
-//                $timelog = Model_Timelog::forge();
-//        $timelog->user_id = 1;
-//        $timelog->clockin = strtotime("Saturday 8:23am");
-//        $timelog->clockout = strtotime("Saturday 12:23pm");
-//        $timelog->save();
-//        
-//                        $timelog = Model_Timelog::forge();
-//        $timelog->user_id = 1;
-//        $timelog->clockin = strtotime("Saturday 2:27am");
-//        $timelog->save();
+                $timelog = Model_Timelog::forge();
+        $timelog->user_id = $id;
+        $timelog->clockin = strtotime("last Monday 1:38pm");
+        $timelog->clockout = strtotime("last Monday 5:03pm");
+        $timelog->save();
+        
+                $timelog = Model_Timelog::forge();
+        $timelog->user_id = $id;
+        $timelog->clockin = strtotime("last Tuesday 8:02am");
+        $timelog->clockout = strtotime("last Tuesday 9:16pm");
+        $timelog->save();
+        
+                $timelog = Model_Timelog::forge();
+        $timelog->user_id = $id;
+        $timelog->clockin = strtotime("last Thursday 8:29am");
+        $timelog->clockout = strtotime("last Thursday 1:18pm");
+        $timelog->save();
+        
+                $timelog = Model_Timelog::forge();
+        $timelog->user_id = $id;
+        $timelog->clockin = strtotime("last Thursday 1:45pm");
+        $timelog->clockout = strtotime("last Thursday 3:30pm");
+        $timelog->save();
+        
+                $timelog = Model_Timelog::forge();
+        $timelog->user_id = $id;
+        $timelog->clockin = strtotime("last Thursday 4:15pm");
+        $timelog->clockout = strtotime("last Thursday 6:23pm");
+        $timelog->save();
+        
+                $timelog = Model_Timelog::forge();
+        $timelog->user_id = $id;
+        $timelog->clockin = strtotime("last Saturday 8:23am");
+        $timelog->clockout = strtotime("last Saturday 12:23pm");
+        $timelog->save();
+        
+                        $timelog = Model_Timelog::forge();
+        $timelog->user_id = $id;
+        $timelog->clockin = strtotime("last Saturday 2:27am");
+        $timelog->clockout = 0;
+        $timelog->save();
         
         $d['timelogs'] = Model_Timelog::find('all', array(
             'where' => array(
-                array('user_id', 14),
+                array('user_id', $id),
+                array('clockout','!=', 0),
             ),
             'order_by' => array('clockin'=>'asc'),
         ));
         $d['first'] = Model_Timelog::find('first', array(
             'where' => array(
-                array('user_id', 14),
+                array('user_id', $id),
             ),
             'order_by' => array('clockin'=>'asc'),
         ));
         $d['last'] = Model_Timelog::find('first', array(
             'where' => array(
-                array('user_id', 14),
+                array('user_id', $id),
             ),
             'order_by' => array('clockin' => 'desc'),
         ));
@@ -310,16 +321,27 @@ class Controller_Logs extends Controller_Template {
             
             //setup data for user
             $usr['days'] = $days;
+            $usr['id'] = $u->id;
             $usr['total'] = Util::sec2hms($overall_total);
             $usr['name'] = $u->fname." ".$u->lname;
             $users[] = $usr;
+            
         }
         
+        $data['admin'] = Auth::member(\Config::get('timetrack.admin_group'));
         $data['users'] = $users;
-        $data['display_type'] = Input::post('display_type');
         
-        //return the view
-        return new Response(View::forge('logs/logtable2', $data));
+        $display_type = Input::post('display_type');
+        
+        //return the appropriate view based on the selected display type
+        
+        if($display_type == 'all'){
+          return new Response(View::forge('logs/logtable2', $data));
+        } else if($display_type == 'day_totals'){
+          return new Response(View::forge('logs/logtable2_day_totals', $data));
+        } else if($display_type == 'period_totals'){
+          return new Response(View::forge('logs/logtable2_period_totals', $data));
+        }
         
     }
     
@@ -406,6 +428,7 @@ class Controller_Logs extends Controller_Template {
                 array('user_id', $id),
                 array('clockin','>=',$day_start),
                 array('clockout', '<=', $day_end),
+                array('clockout', '!=', 0),
             ),
             'order_by' => array('clockin' => 'asc'),
         ));
@@ -416,37 +439,18 @@ class Controller_Logs extends Controller_Template {
                 array('user_id', $id),
                 array('clockin', '>=', $day_start),
                 array('clockin', '<=', $day_end),
+                array('clockout', 0),
             ),
         ));
         
         //there are full logs for this day
-        if(!is_null($logs_for_day)){
+        if(!empty($logs_for_day)){
 
             $first = true;
             foreach($logs_for_day as $log){
 
-                //get rounded values
-                $clockin_rounded 
-                        = Util::roundToInterval($log->clockin, 
-                                \Config::get('timetrack.log_interval')*60);
-                $clockout_rounded 
-                        = Util::roundToInterval($log->clockout, 
-                                \Config::get('timetrack.log_interval')*60);
-
-                //set clockin and clockout
-                $clockin = ($round) ? $clockin_rounded : $log->clockin;
-                $clockout = ($round) ? $clockout_rounded : $log->clockout;
-
-                //store information about the log
-                $lg = new LogInfo();
-                $lg->id = $log->id;
-                $lg->clockin = $clockin;
-                $lg->clockout = $clockout;
-                $lg->clockin_string = date(\Config::get('timetrack.log_time_format'), $clockin);
-                $lg->clockout_string = date(\Config::get('timetrack.log_time_format'), $clockout);
-                $lg->time = $clockout_rounded - $clockin_rounded;
-                $lg->time_string = Util::sec2hms($lg->time);
-                
+                $lg = $this->parse_log($log, $round, false);
+              
                 //first log for the day
                 if($first){
 
@@ -462,35 +466,215 @@ class Controller_Logs extends Controller_Template {
                 $day_log->total_time += $lg->time;
                 
             }
+            
+            //one last partial log exists for this day
+            if(!is_null($log_sans_clockout)){
+              
+              $day_log->additional_logs[] = $this->parse_log($log_sans_clockout, $round, true);
+              
+            }
+            
 
-        }//end processing full logs for the day
+        //there is only a partial log for this day
+        } else if(!is_null($log_sans_clockout)){
+          
+          $day_log->first_log = $this->parse_log($log_sans_clockout, $round, true);
+          
+        }
 
         //set string representing total of full logs
         $day_log->total_time_string = Util::sec2hms($day_log->total_time);
         
-        //there is a partial log for this day
-        if(!is_null($log_sans_clockout)){
-
-            $dl = new LogInfo();
-            $dl->id = $log->id;
-            $dl->clockin = $clockin;
-            $dl->clockin_string = date(\Config::get('timetrack.log_time_format'), $clockin);
-            $dl->clockout = 0;
-            $dl->clockout_string = 'Not Clocked Out';
-            $dl->time = 0;
-            $dl->time_string = 'N/A';
-            
-            $day_log->additional_logs[] = $dl;
-            $day_log->clocked_out = false;
-
-        }
-        
+       
         return $day_log;
     }
     
+    /**
+     * Create a LogInfo object based off an actual timelog
+     * @param type $log - timelog object to parse
+     * @param type $round - whether to round time values
+     * @param type $partial - whether this is a partial log
+     */
+    private function parse_log($log, $round, $partial){
+      
+        //get rounded values
+        $clockin_rounded 
+                = Util::roundToInterval($log->clockin, 
+                        \Config::get('timetrack.log_interval')*60);
+        $clockout_rounded 
+                = Util::roundToInterval($log->clockout, 
+                        \Config::get('timetrack.log_interval')*60);
+
+        //set clockin and clockout
+        $clockin = ($round) ? $clockin_rounded : $log->clockin;
+        $clockout = ($round) ? $clockout_rounded : $log->clockout;
+
+        //store information about the log
+        $lg = new LogInfo();
+        $lg->id = $log->id;
+        $lg->clockin = $clockin;
+        $lg->clockout = ($partial) ? 0 : $clockout;
+        $lg->clockin_string = date(\Config::get('timetrack.log_time_format'), $clockin);
+        $lg->clockout_string = ($partial) ? 'Not Clocked Out' : date(\Config::get('timetrack.log_time_format'), $clockout);
+        $lg->time = ($partial) ? 0 : $clockout_rounded - $clockin_rounded;
+        $lg->time_string = ($partial) ? 'N/A' : Util::sec2hms($lg->time);
+      
+        return $lg;
+        
+    }
+    
+    
+    /**
+     * Edit log entry to reflect changes submitted by user
+     */
+    public function action_edit(){
+      
+        //make sure user is authenticated and an admin
+        if(!Auth::member(\Config::get('timetrack.admin_group'))){
+            Response::redirect('root/home');
+        }
+        
+        //fetch the log to be edited
+        $log = Model_Timelog::find(Input::post("id"));
+        
+        //find the date of the log
+        $date_string = date("M j Y", $log->clockin);
+        
+        //get the start timestamp
+        $clockin_new = strtotime(Input::post('start_time')." ".$date_string);
+        
+        //get the end timestamp
+        $end_time = Input::post('end_time');
+        $clockout_new = (preg_match('/^\d\d?:\d\d (am|AM|Am|PM|pm|Pm)$/', $end_time)) 
+                ? strtotime($end_time." ".$date_string) : 0;
+        
+        //if clockout is 0 but clockout_new is not zero, find the
+        //user associated with the log and clock him / her out
+        if($log->clockout == 0 && $clockout_new > 0){
+          
+          $user = Model_User::find($log->user_id);
+          $user->clocked_in = false;
+          $user->save();
+          
+        }
+        
+        //edit log clockin time
+        $log->clockin = $clockin_new;
+        $log->clockout = $clockout_new;
+        $log->save();
+        
+        return Response::forge(json_encode(array('success' => true)));
+    }
+
+    public function action_add(){
+      
+      
+        //make sure user is authenticated and an admin
+        if(!Auth::member(\Config::get('timetrack.admin_group'))){
+            Response::redirect('root/home');
+        }
+        
+        //find the date of the log
+        $start_stamp = Input::post('start_stamp');
+        $date_string = date("M j Y", $start_stamp);
+        
+        //get the start timestamp
+        $clockin = strtotime(Input::post('start_time')." ".$date_string);
+        $clockout = strtotime(Input::post('end_time')." ".$date_string);
+
+        $new_log = Model_Timelog::forge();
+        $new_log->clockin = $clockin;
+        $new_log->clockout = $clockout;
+        $new_log->user_id = Input::post('user_id');
+        $success = $new_log->save();
+        
+        return Response::forge(json_encode(array('success' => $success)));
+      
+    }
+    
+    /**
+     * determine if a log is valid (does not overlap already existing logs
+     */
+    public function action_valid_log(){
+      
+      //get date for this log
+      $date_string = date("M j Y", Input::post('day_stamp'));
+      
+      //get log start and end times
+      $start = strtotime(Input::post('start')." ".$date_string);
+      $end = strtotime(Input::post('end')." ".$date_string);
+      
+      //get id if one is specified
+      $id = is_null(Input::post('id')) ? 0 : Input::post('id');
+      $user_id = is_null(Input::post('user_id')) ? 0 : Input::post('user_id');
+      
+      //find any logs that start during the range (if any)
+      $start_during_range = Model_Timelog::find('all', array(
+          'where' => array(
+              array('clockin', '>', $start),
+              array('clockin', '<', $end),
+              array('id', '!=', $id),
+              array('user_id', '=', $user_id),
+          )
+      ));
+      
+      //find any logs that end during the range (if any)
+      $end_during_range = Model_Timelog::find('all', array(
+          'where' => array(
+              array('clockout', '>', $start),
+              array('clockout', '<', $end),
+              array('id', '!=', $id),
+              array('user_id', '=', $user_id),
+          )
+      ));
+      
+      //find any logs that start before and end after the range (if any)
+      $contain_range = Model_Timelog::find('all', array(
+          'where' => array(
+              array('clockin', '<', $start),
+              array('clockout', '>', $end),
+              array('id', '!=', $id),
+              array('user_id', '=', $user_id),
+          )
+      ));
+      
+      
+      if(empty($start_during_range) 
+              && empty($end_during_range) 
+              && empty($contain_range)){
+        return Response::forge(json_encode(true));
+      } else {
+        return Response::forge(json_encode(false));
+      }
+      
+      
+    }
+    
+    /**
+     * remove a log from the database
+     */
+    public function action_remove(){
+      
+       //make sure user is authenticated and an admin
+      if(!Auth::member(\Config::get('timetrack.admin_group'))){
+          Response::redirect('root/home');
+      }
+      
+      $id = Input::post('id');
+      
+      $log = Model_Timelog::find($id);
+      $log->delete();
+
+      return Response::forge(json_encode('true'));
+      
+    }
     
     
 }//end class
+
+
+
+
 
 class DayLogContainer{
     

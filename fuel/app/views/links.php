@@ -16,7 +16,11 @@
     
     
 ?>
+
+
 <ul>
+  
+  <?php if(!Agent::is_mobiledevice()):?>
     <?php if($id):?>
         <li><a href='<?php echo Uri::create('root/home')?>'>Home</a></li>
         <li><a href='<?php echo Uri::create('logs/display')?>'>Logs</a></li>
@@ -26,9 +30,10 @@
     
     
     <?php endif ?>
+  <?php endif?>
     
-    <li><a href="#">Help</a></li>
     <?php if($id):?>
     <li style="position:absolute;right:0px;"><a href='<?php echo Uri::create('root/logout')?>'><?php echo "Logout ($user->username)"?></a></li>
     <?php endif?>
 </ul>
+

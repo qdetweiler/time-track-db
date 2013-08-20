@@ -3,7 +3,7 @@
  *    index.php serves as the landing view for the TimeTrack application
  */
 ?>
-<div id='login_box'>
+<div id='login_box' class='content_box'>
     <form id='login_form' action='<?php echo Uri::create('root/authenticate')?>' method='post'>
         <div id='username'>
             <label id='username_label'>Username</label>

@@ -59,7 +59,7 @@ class Controller_Users extends Controller_Template {
                 
                 $fname = ucfirst($validator->validated('fname'));
                 $lname = ucfirst($validator->validated('lname'));
-                $username = ucfirst($validator->validated('username'));
+                $username = $validator->validated('username');
                 $email = $validator->validated('email');
                 $type = $validator->input('type');
                 $temp_password = \Str::random('alnum', 8);

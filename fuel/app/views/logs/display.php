@@ -1,3 +1,9 @@
+<script type="text/javascript">
+  var log_min_interval = <?php echo \Config::get('timetrack.log_interval');?>;
+  var valid_log = "<?php echo Uri::create('logs/valid_log');?>";
+  var remove = "<?php echo Uri::create('logs/remove')?>";
+</script>
+
 <div id="wrapper">
     <div id="controls">
         <form id='control_form' action='<?php echo Uri::create('logs/logtable2')?>' method='post'>
@@ -33,7 +39,7 @@
                 <label>Display</label>
                 <select name='display_type'>
                     <option value='all' selected>Logs</option>
-                    <?php if(false):?><option value='day_totals'>Daily Totals</option><?php endif?>
+                    <option value='day_totals'>Daily Totals</option>
                     <option value='period_totals'>Period Totals</option>
                 </select>
             </span>
