@@ -38,7 +38,8 @@
 
   </body>
   
-  <?php echo Asset::js(array('jquery-1.9.1.min.js', 'jquery.form.min.js', 'jquery-ui-1.10.3.custom.min.js')) ?>
+  <?php echo Asset::js(array('jquery-1.9.1.min.js', 'jquery.form.min.js', 
+                    'jquery-ui-1.10.3.custom.min.js')) ?>
   <?php if(isset($page_js)) echo Asset::js($page_js) ?>
   <?php if(isset($script)) echo $script ?>
   

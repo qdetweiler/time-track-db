@@ -80,6 +80,23 @@ h3 {
   visibility: hidden;
 }
 
+input.hyperlink {
+  background:none!important;
+  border:none;
+  display:inline;
+  padding:0!important;
+  font:inherit;
+  outline:none;
+  outline-offset:0;
+  cursor:pointer;
+  color:blue;
+}
+
+input.hyperlink:disabled {
+  color:grey;
+  cursor:default;
+}
+
 /*  LOGIN PAGE STYLES  */
 #login_box {
     position:relative;

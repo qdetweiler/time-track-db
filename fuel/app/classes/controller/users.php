@@ -1,7 +1,8 @@
 <?php
 
 /*
- * Model_Users controls interactions involving users
+ * Model_Users controls interactions involving users, including creating users,
+ * resetting passwords, and generating views for working with users
  */
 
 class Controller_Users extends Controller_Template {
@@ -14,22 +15,28 @@ class Controller_Users extends Controller_Template {
         
         //user is not an admin
         if(!Auth::member(\Config::get('timetrack.admin_group'))){
+          
+            //redirect.  Only admins can administrate user accounts
             Response::redirect('root/home');
         }
         
         //get list of users
         $users = Model_User::find('all');
         
-        //for each user, set the status and status_class properties
+        //for each user, set additional info for the view
         foreach($users as $user){
             $user->status = ($user->clocked_in) ? "Clocked In" : "Clocked Out";
             $user->status_class = ($user->clocked_in) ? "cl_in" : "cl_out";
+            $user->type = ($user->group == \Config::get('timetrack.admin_group')) 
+                                        ? 'Administrator' : 'Standard';
+            $id_info = Auth::get_user_id();
+            
+            //remove button will not be enabled for the current user
+            $user->remove_disabled 
+                    = ($user->id == $id_info[1]) ? true : false;
         }
         
         $data['users'] = $users;
-        $id_info = Auth::get_user_id();
-        $id = $id_info[1];
-        $data['currid'] = $id;
         
         //create view
         $this->template->title = 'Users List';
@@ -46,6 +53,8 @@ class Controller_Users extends Controller_Template {
         
         //user is not an admin
         if(!Auth::member(\Config::get('timetrack.admin_group'))){
+          
+            //Redirect.  Only an admin can add users
             Response::redirect('root/home');
         }
         
@@ -67,9 +76,11 @@ class Controller_Users extends Controller_Template {
                 $id = Auth::create_user($username, $temp_password, $email);
                 $user = Model_User::find($id);
                 $user->first_login = true;
-                $user->fname = ucfirst($fname);
-                $user->lname = ucfirst($lname);
-                $user->group = ($type=='admin') ? 100 : 1;
+                $user->fname = $fname;
+                $user->lname = $lname;
+                $user->group = ($type=='admin') 
+                        ? \Config::get('timetrack.admin_group') 
+                        : 1;
                 $user->save();
                 
                 $data['fname'] = $fname;
@@ -120,15 +131,26 @@ class Controller_Users extends Controller_Template {
     }
     
     
+    /**
+     * Perform removal of a user from the database.
+     * Note:  Validation of intent must be performed client-side
+     */
     public function action_remove(){
         
         //user is not an admin
         if(!Auth::member(\Config::get('timetrack.admin_group'))){
+            //redirect.  Only admins can remove users
             Response::redirect('root/home');
+            
+        //id variable was not set, or script was not reached via post
+        } else if (is_null(Input::post('id'))){
+          
+            //script was accessed incorrectly.  Redirect.
+            Response::redirect('users/list');
         }
         
         //delete the user account
-        $id = Input::param('id');
+        $id = Input::post('id');
         $user = Model_User::find($id);
         $user->delete();
         
@@ -214,12 +236,14 @@ class Controller_Users extends Controller_Template {
     }
     
     /**
-     * Allow user to reset password
+     * Build the view allowing a user to reset his/her password
      */
     public function action_reset_pass(){
         
         //get id for reset from the session
         $id = Session::get('reset_id');
+        
+        //id not set correctly
         if(is_null($id)){
             Response::redirect('root/home');
         }
@@ -264,8 +288,14 @@ class Controller_Users extends Controller_Template {
             
             if($valid){
                 Session::delete('reset_id');
-                $val = Auth::change_password($oldpass, $newpass1, $user->username);
-                $val2 = Auth::login($user->username, $newpass1);
+                
+                //change the password
+                Auth::change_password($oldpass, $newpass1, $user->username);
+                
+                //automatically log user in using new password
+                Auth::login($user->username, $newpass1);
+                
+                //reset password expiration
                 $user->password_expiration = strtotime("+ ".\Config::get('timetrack.password_lifespan'), time());
                 $user->save();
                 Response::redirect('root/home');
@@ -284,12 +314,16 @@ class Controller_Users extends Controller_Template {
     
     /**
      * auto_reset_pass automatically resets a user's password to a
-     * random value and displays the new password
+     * random value and displays the new password.
+     * The method is designed to allow an administrative user to
+     * reset the password for another user.
      */
     public function action_auto_reset_pass(){
         
         //user is not an admin
         if(!Auth::member(\Config::get('timetrack.admin_group'))){
+          
+            //Redirect.  Only admins can reset passwords
             Response::redirect('root/home');
         }
         
@@ -312,9 +346,7 @@ class Controller_Users extends Controller_Template {
         $this->template->content = View::forge('users/reset_success', $data);
         
     }
-    
 }
-
 
 
 

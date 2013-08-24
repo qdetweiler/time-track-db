@@ -60,17 +60,14 @@
 #user_table .options_edit a,.options_logs a,.options_remove a, .options_reset a{
     text-decoration:none;
 }
-#user_table .odd {
-    background-color:white;
-}
-#user_table .even {
-    background-color:white;
-}
 #user_table .cl_in {
     color:green;
 }
 #user_table .cl_out {
     color:red;
+}
+.user_row {
+  background-color:white;
 }
 #user_table_wrapper #add a{
     position:absolute;

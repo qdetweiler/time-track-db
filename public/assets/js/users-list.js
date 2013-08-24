@@ -3,7 +3,7 @@
  */
 $(document).ready(function(){
     
-    $('.options_remove a').click(function(){
+    $('.remove_button').click(function(){
         if(!confirm("Are you sure you want to remove this user\n" +
                     "and all associated logs from the database?")){
             return false;
@@ -15,7 +15,7 @@ $(document).ready(function(){
     });
     $('.cl_out').click(function(){
       clockin($(this));
-    }); 
+    });
     
 });
 

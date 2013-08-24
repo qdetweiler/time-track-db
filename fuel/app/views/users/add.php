@@ -4,7 +4,6 @@
  * Add.php creates the content for the user addition form
  */
 ?>
-<pre><?php //echo print_r($error)?></pre>
 <div class="content_wrapper">
 <div class='rounded_box' id='user_info'>
     <form id='form' action='<?php echo Uri::create('users/add')?>' method='post'>
