@@ -1,4 +1,7 @@
 var time_format_regex = RegExp("^\\d\\d?:\\d\\d (pm|Pm|PM|Am|am|AM)");
+var log_min_interval = 15;
+var prev_start = '';
+var prev_end = '';
 
 /* 
  * To change this template, choose Tools | Templates
@@ -6,68 +9,8 @@ var time_format_regex = RegExp("^\\d\\d?:\\d\\d (pm|Pm|PM|Am|am|AM)");
  */
 function setup_logtable(){
 
-  /********************  Edit Button Interactions  *****************/
-  $('.log_edit_button').on("click",function(){
-    
-    //hide all edit and remove buttons
-    $('.buttons1').addClass('hidden');
-    
-    //unhide all edit and remove disabled links
-    $('.disabled_buttons1').removeClass('hidden');
-    
-    //hide disabled links for this log
-    $(this).closest('.controls').find('.disabled_buttons1').addClass('hidden');
-    
-    //hide add buttons
-    $('.add_log_enabled').addClass('hidden');
-    $('.add_button_disabled').removeClass('hidden');
-    
-    //unhide submit and cancel buttons for this log
-    $(this).closest('.controls').find('.buttons2').removeClass('hidden');
-
-    //hide log text span
-    $(this).closest('.a_log').find('.log_text_spn').addClass('hidden');
-    
-    //setup dates for log text form
-    var form_input = $(this).closest('.a_log').find('.time_input');
-    
-      //are we supposed to round?
-      var round = $('#round').children('input').is(':checked');
-      var step_min = (round === true) ? log_min_interval : 1;
-    
-    $(form_input).each(function(index){
-      
-      $(this).timepicker({
-        timeFormat:'hh:mm tt',
-        controlType: 'slider',
-        stepMinute: step_min
-      });
-      $(this).timepicker("refresh");
-      
-      //parse date string
-      //input is in the format hh:mm tt, hours do not have leading zero
-      var time = $(this).val();
-
-      if(time.match(time_format_regex) !== null){
-      
-        var date = convert_hhmmtt(time);
-        $(this).timepicker("setDate", date);
-
-      } else {
-        var date = convert_hhmmtt($(this).closest('.a_log')
-                .find('.log_form_frm').find('.time_input').first().val());
-        date.setMinutes(date.getMinutes()+log_min_interval);
-        $(this).timepicker("setDate", date);
-      }
-      
-    });
-    
-    //unhide log text form
-    $(this).closest('.a_log').find('.log_form_spn').removeClass('hidden');
-    
-    return false;
-    
-  });
+  setup_edit_buttons();
+  
   
   /***********************  Cancel Button **********************/
   $('.log_cancel_button').on("click",function(){
@@ -191,7 +134,7 @@ function setup_logtable(){
         //make sure this timeframe does not overlap with other logs
         $.ajax({
               type: "POST",
-              url:valid_log,
+              url:valid_log_uri,
               data:{
                 day_stamp:day_stamp,
                 start:start_time_s,
@@ -268,7 +211,7 @@ function setup_logtable(){
         //make sure this timeframe does not overlap with other logs
         $.ajax({
               type: "POST",
-              url:valid_log,
+              url:valid_log_uri,
               data:{
                 day_stamp:day_stamp,
                 start:start_time_s,
@@ -350,7 +293,7 @@ function setup_logtable(){
     if(confirm('Are you sure you want to remove this log from the database?')){
       
       var id = $(this).closest('.a_log').find('.log_form_frm').find('[name=id]').val();
-      $.post(remove, {id:id}, function(data){$('#control_form').submit();}, 'json');
+      $.post(remove_uri, {id:id}, function(data){$('#control_form').submit();}, 'json');
       
     }
     
@@ -358,6 +301,65 @@ function setup_logtable(){
   
 };
 
+/**
+ * Setup the interactions on edit buttons
+ * @returns {undefined} 
+ */
+function setup_edit_buttons(){
+  
+  $('.edit_b').on("click", function(event){
+    
+    //hide all visible controls on the page
+    $('.buttons_1').toggleClass('hidden');
+    
+    //unhide submit and cancel buttons for this form
+    $(this).parent().siblings('.buttons_2').toggleClass('hidden');
+    
+    //setup dates for input elements
+    var form_input = $(this).closest('form').find('.time_input');
+    
+      //are we supposed to round?
+      var round = $('#round').children('input').is(':checked');
+      var step_min = (round === true) ? log_min_interval : 1;
+    
+      $(form_input).each(function(index){
+
+        $(this).timepicker({
+          timeFormat:'hh:mm tt',
+          controlType: 'slider',
+          stepMinute: step_min
+        });
+        $(this).timepicker("refresh");
+
+        //parse date string
+        //input is in the format hh:mm tt, hours do not have leading zero
+        var time = $(this).val();
+        
+        //capture current values in case a cancellation is required
+        if(index === 0) prev_start = time ; else prev_end = time;
+        
+        if(time.match(time_format_regex) !== null){
+
+          var date = convert_hhmmtt(time);
+          $(this).timepicker("setDate", date);
+
+        } else {
+          var date = convert_hhmmtt($(this).closest('form')
+                  .find('.time_input').first().val());
+          date.setMinutes(date.getMinutes()+log_min_interval);
+          $(this).timepicker("setDate", date);
+        }
+
+      });
+    
+    //enable input elements
+    form_input.prop('disabled', false);
+    
+    event.preventDefault();
+    return false;
+    
+  });
+}
 
 /**
  * Convert string in the form "hh:mm tt" into a date object where the

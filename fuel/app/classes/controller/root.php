@@ -213,8 +213,8 @@ class Controller_Root extends Controller_Template {
 
     //build view
     $this->template->title = 'Home';
-    $this->template->page_css = array('home.css');
-    $this->template->page_js = array('root-home.js');
+    $this->template->css = array('home.css');
+    $this->template->js = array('root-home.js');
     $this->template->content = View::forge('root/home', $data);
   }
 

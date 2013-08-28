@@ -55,7 +55,7 @@ return array(
     'log_time_format' => 'g:i a',
     
     //format for dates used in the log table
-    'log_date_format' => 'm / d',
+    'log_date_format' => 'n / j',
     
 );
 

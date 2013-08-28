@@ -19,8 +19,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php if(isset($title)) echo $title?></title>
 
-    <?php echo Asset::css(array('defaultstyle.css', 'main.css')) ?>
-    <?php if(isset($page_css)) echo Asset::css($page_css) ?>
+    <?php echo Asset::css(array('defaultstyle.css',
+        'main.css', 'jquery-ui-1.10.3.custom.min.css')) ?>
+    <?php if(isset($css)) echo Asset::css($css) ?>
     <?php if(isset($style)) echo $style ?>
     
   </head>
@@ -40,7 +41,7 @@
   
   <?php echo Asset::js(array('jquery-1.9.1.min.js', 'jquery.form.min.js', 
                     'jquery-ui-1.10.3.custom.min.js')) ?>
-  <?php if(isset($page_js)) echo Asset::js($page_js) ?>
+  <?php if(isset($js)) echo Asset::js($js) ?>
   <?php if(isset($script)) echo $script ?>
   
   

@@ -1,0 +1,82 @@
+  public function action_test(){
+      
+        $id = 3;
+      
+        $timelog = Model_Timelog::forge();
+        $timelog->user_id = $id;
+        $timelog->clockin = strtotime("last Monday 8:23am");
+        $timelog->clockout = strtotime("last Monday 12:23pm");
+        $timelog->save();
+        
+                $timelog = Model_Timelog::forge();
+        $timelog->user_id = $id;
+        $timelog->clockin = strtotime("last Monday 1:38pm");
+        $timelog->clockout = strtotime("last Monday 5:03pm");
+        $timelog->save();
+        
+                $timelog = Model_Timelog::forge();
+        $timelog->user_id = $id;
+        $timelog->clockin = strtotime("last Tuesday 8:02am");
+        $timelog->clockout = strtotime("last Tuesday 9:16pm");
+        $timelog->save();
+        
+                $timelog = Model_Timelog::forge();
+        $timelog->user_id = $id;
+        $timelog->clockin = strtotime("last Thursday 8:29am");
+        $timelog->clockout = strtotime("last Thursday 1:18pm");
+        $timelog->save();
+        
+                $timelog = Model_Timelog::forge();
+        $timelog->user_id = $id;
+        $timelog->clockin = strtotime("last Thursday 1:45pm");
+        $timelog->clockout = strtotime("last Thursday 3:30pm");
+        $timelog->save();
+        
+                $timelog = Model_Timelog::forge();
+        $timelog->user_id = $id;
+        $timelog->clockin = strtotime("last Thursday 4:15pm");
+        $timelog->clockout = strtotime("last Thursday 6:23pm");
+        $timelog->save();
+        
+                $timelog = Model_Timelog::forge();
+        $timelog->user_id = $id;
+        $timelog->clockin = strtotime("last Saturday 8:23am");
+        $timelog->clockout = strtotime("last Saturday 12:23pm");
+        $timelog->save();
+        
+                        $timelog = Model_Timelog::forge();
+        $timelog->user_id = $id;
+        $timelog->clockin = strtotime("last Saturday 2:27am");
+        $timelog->clockout = 0;
+        $timelog->save();
+        
+        $d['timelogs'] = Model_Timelog::find('all', array(
+            'where' => array(
+                array('user_id', $id),
+                array('clockout','!=', 0),
+            ),
+            'order_by' => array('clockin'=>'asc'),
+        ));
+        $d['first'] = Model_Timelog::find('first', array(
+            'where' => array(
+                array('user_id', $id),
+            ),
+            'order_by' => array('clockin'=>'asc'),
+        ));
+        $d['last'] = Model_Timelog::find('first', array(
+            'where' => array(
+                array('user_id', $id),
+            ),
+            'order_by' => array('clockin' => 'desc'),
+        ));
+        
+        foreach($d['timelogs'] as $timelog){
+            $formatted[] = date('m/d g:i:s a',$timelog->clockin).", ".date('m/d g:i:s a',$timelog->clockout);
+        }
+        $d['formatted'] = $formatted;
+        
+        $data['data_set'] = $d;
+        
+        $this->template->content = View::forge('root/test',$data);
+
+    }

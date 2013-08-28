@@ -9,7 +9,6 @@ class Controller_Logs extends Controller_Template {
 
     /**
      * Build the page responsible for enabling user to view logs
-     * 
      * Note:  Most of the controls here will be handled with ajax
      */
     public function action_display(){
@@ -21,28 +20,54 @@ class Controller_Logs extends Controller_Template {
             Response::redirect('root/home');
         }
         
-        //set admin data for view
+        //build correct view depending on user account type
         if(Auth::member(\Config::get('timetrack.admin_group'))){
-            $this->admin_display($id);
+            $this->build_admin_display($id);
         } else {
-            $this->standard_display($id);
+            $this->build_standard_display($id);
         }
         
         //setup css for page
-        $this->template->page_css = array('logs_display.css','logs_logtable.css'
-            , 'jquery-ui-1.10.3.custom.min.css');
+        $this->template->css = array('logs_display.css','logs_logtable.css');
         
         //setup javascript for page
-        $this->template->page_js = array('logs-display.js', 'jquery.form.min.js'
-            ,'jquery-ui-1.10.3.custom.min.js','jquery-ui-timepicker-addon.js'
-            ,'logs-logtable.js');
+        $this->template->js = array('logs-display.js', 'logs-logtable.js',
+            'jquery-ui-timepicker-addon.js');
+        
+        //setup title
+        $this->template->title = "Timelogs";
+
+    }
+    
+    
+    /**
+     * Build the log display for a standard user
+     * @param type $id
+     */
+    private function build_standard_display($id){
+        
+        //setup period <select> options
+        $data['period_options'] = $this->forge_period_options($id);
+        
+        //if there are no logs for this user, disable the update button
+        $data['update_disabled'] = ($this->first_log_clockin('all') == 0) ? true : false;
+        
+        //setup other variables
+        $data['admin'] =false;
+        $data['id'] = $id;
+        $data['control_form_action'] = Uri::create('logs/logtable3');
+        
+        //setup view
+        $this->template->title = "Timelogs";
+        $this->template->content = View::forge('logs/display', $data);
+        
     }
     
     /**
      * Build the logs display page for an administrative user
      * @param type $id
      */
-    private function admin_display($id){
+    private function build_admin_display($id){
         
         //setup selected user
         $user_id = Input::param('id');
@@ -54,9 +79,11 @@ class Controller_Logs extends Controller_Template {
             $data['selected_id'] = $id;
         }
         
-        //get data range
-        //$data['range'] = $this->get_range($data['selected_id']); //get range for only specified user
-        $data['range'] = $this->get_range('all');
+        //get the set of pay periods available
+        $data['period_options'] = $this->forge_period_options('all');
+        
+        //if there are no logs for this user, disable the update button
+        $data['update_disabled'] = ($this->first_log_clockin('all') == 0) ? true : false;
 
         //setup users
         $users = Model_User::find('all');
@@ -65,30 +92,41 @@ class Controller_Logs extends Controller_Template {
         //setup other variables
         $data['id'] = $id;
         $data['admin'] = true;
-
-        //setup view
-        $this->template->title = "Timelogs";
-        $this->template->content = View::forge('logs/display', $data);
+        $data['control_form_action'] = Uri::create('logs/logtable3');
         
+        //js variables
+//        $log_min_interval = \Config::get('timetrack.log_interval');
+//        $valid_log_uri = Uri::create('logs/valid_log');
+//        $remove_uri = Uri::create('logs/remove');
+        
+//        $js = htmlspecialchars("var log_min_interval = \"$log_min_interval\";
+//var valid_log_uri = \"$valid_log_uri\";
+//var remove_uri = \"$remove_uri;\"");
+
+        //set local javascript into page
+//        $this->template->script = View::forge('script', array('js' => $js));
+        
+        //generate content section
+        $this->template->content = View::forge('logs/display', $data);
+
     }
     
     /**
-     * Return a map representing the set of pay periods available for
-     * the given user or for all users
+     * Return the Unix timestamp representing the clockin time of the first
+     * log for the specified user or the first overall log if the string
+     * 'all' is passed in instead of an ID
      * @param type mixed - id of user if specified or string 'all' for all users
-     * @return type map of pay period ranges
+     * @return time of first clockin for the given user, or 0 if the
+     *         user never clocked in
      */
-    private function get_range($id){
+    private function first_log_clockin($id){
         
-        //get all the appropriate logs for either the given user
+        //get first log for either the given user
         //or all users depending on the id passed in
         if($id == 'all'){
             $first_log = Model_Timelog::find('first', array(
                 'order_by' => array('clockin' => 'asc'),
             ));
-//            $last_log = Model_Timelog::find('first', array(
-//                'order_by' => array('clockin' => 'desc'),
-//            ));
         } else {
             $first_log = Model_Timelog::find('first', array(
                 'where' => array(
@@ -96,160 +134,37 @@ class Controller_Logs extends Controller_Template {
                 ),
                 'order_by' => array('clockin' => 'asc'),
             ));
-//            $last_log = Model_Timelog::find('first', array(
-//                'where' => array(
-//                    array('user_id', $id),
-//                ),
-//                'order_by' => array('clockin' => 'desc'),
-//            ));
         }
         
-        //there are no logs for this user
-        if(is_null($first_log)){
-            $range = array();
-            
-        //there are logs for this user
-        } else {
-//            $end_log = $last_log->clockout == null ? $last_log->clockin : $last_log->clockout;
-          
-            //range should end today
-            $end_time = time();
-            $range = $this->get_date_range($first_log->clockin, $end_time);
-        }
-        
-        return $range;
-        
+        return (is_null($first_log)) ? 0 : $first_log->clockin;
     }
     
     /**
-     * Build the log display for a standard user
-     * @param type $id
+     * Construct the set of pay period options for the specified user
+     * or for all users if 'all' is passed instead of an ID.  
+     * Note:  The return value of this function is a 
+     * formatted HTML partial-page constructed using "View::forge()"
      */
-    private function standard_display($id){
-        
-        //setup range
-        $data['range'] = $this->get_range($id);
-        
-        //setup other variables
-        $data['admin'] =false;
-        $data['id'] = $id;
-        
-        //setup view
-        $this->template->title = "Timelogs";
-        $this->template->content = View::forge('logs/display', $data);
-        
-    }
-    
-    
-    public function action_test(){
+    private function forge_period_options($id){
       
-        $id = 3;
+      $start_time = $this->first_log_clockin($id);
+      $end_time = time(); //fetch all pay periods from the first to today
       
-        $timelog = Model_Timelog::forge();
-        $timelog->user_id = $id;
-        $timelog->clockin = strtotime("last Monday 8:23am");
-        $timelog->clockout = strtotime("last Monday 12:23pm");
-        $timelog->save();
+      //there are no available pay periods for the specified user
+      if($start_time == 0){
+        $data['periods'] = array();
+        return View::forge('logs/partials/period_options');
+      }
+      
+      //get timestamp for monday on the first and last pay periods available
+      $first_week = strtotime("previous ".\Config::get('timetrack.period_start_day'), strtotime("+ 1 day", $start_time));
+      $last_week = strtotime("previous ".\Config::get('timetrack.period_start_day'), strtotime("+ 1 day", $end_time));
         
-                $timelog = Model_Timelog::forge();
-        $timelog->user_id = $id;
-        $timelog->clockin = strtotime("last Monday 1:38pm");
-        $timelog->clockout = strtotime("last Monday 5:03pm");
-        $timelog->save();
-        
-                $timelog = Model_Timelog::forge();
-        $timelog->user_id = $id;
-        $timelog->clockin = strtotime("last Tuesday 8:02am");
-        $timelog->clockout = strtotime("last Tuesday 9:16pm");
-        $timelog->save();
-        
-                $timelog = Model_Timelog::forge();
-        $timelog->user_id = $id;
-        $timelog->clockin = strtotime("last Thursday 8:29am");
-        $timelog->clockout = strtotime("last Thursday 1:18pm");
-        $timelog->save();
-        
-                $timelog = Model_Timelog::forge();
-        $timelog->user_id = $id;
-        $timelog->clockin = strtotime("last Thursday 1:45pm");
-        $timelog->clockout = strtotime("last Thursday 3:30pm");
-        $timelog->save();
-        
-                $timelog = Model_Timelog::forge();
-        $timelog->user_id = $id;
-        $timelog->clockin = strtotime("last Thursday 4:15pm");
-        $timelog->clockout = strtotime("last Thursday 6:23pm");
-        $timelog->save();
-        
-                $timelog = Model_Timelog::forge();
-        $timelog->user_id = $id;
-        $timelog->clockin = strtotime("last Saturday 8:23am");
-        $timelog->clockout = strtotime("last Saturday 12:23pm");
-        $timelog->save();
-        
-                        $timelog = Model_Timelog::forge();
-        $timelog->user_id = $id;
-        $timelog->clockin = strtotime("last Saturday 2:27am");
-        $timelog->clockout = 0;
-        $timelog->save();
-        
-        $d['timelogs'] = Model_Timelog::find('all', array(
-            'where' => array(
-                array('user_id', $id),
-                array('clockout','!=', 0),
-            ),
-            'order_by' => array('clockin'=>'asc'),
-        ));
-        $d['first'] = Model_Timelog::find('first', array(
-            'where' => array(
-                array('user_id', $id),
-            ),
-            'order_by' => array('clockin'=>'asc'),
-        ));
-        $d['last'] = Model_Timelog::find('first', array(
-            'where' => array(
-                array('user_id', $id),
-            ),
-            'order_by' => array('clockin' => 'desc'),
-        ));
-        
-        foreach($d['timelogs'] as $timelog){
-            $formatted[] = date('m/d g:i:s a',$timelog->clockin).", ".date('m/d g:i:s a',$timelog->clockout);
-        }
-        $d['formatted'] = $formatted;
-        
-        $data['data_set'] = $d;
-        
-        $this->template->content = View::forge('root/test',$data);
-
-    }
-
-    /**
-     * Return JSON encoded range information
-     * This function is primarily designed to be used with ajax
-     * @return type
-     */
-    public function action_date_range(){
-        $id = Input::post('id');
-        return Response::forge(json_encode($this->get_range($id)));
-    }
-    
-    /**
-     * Return an array of date range strings mapped to pairs of
-     * timestamp values representing each week a user has timelogs in the
-     * system
-     * @param type $id of user to get ranges for
-     */
-    private function get_date_range($first_timelog, $last_timelog){
-                
-        //get timestamp for first and last monday
-        $first_week = strtotime("previous ".\Config::get('timetrack.period_start_day'), strtotime("+ 1 day", $first_timelog));
-        $last_week = strtotime("previous ".\Config::get('timetrack.period_start_day'), strtotime("+ 1 day", $last_timelog));
-        
+      //construct data for the view
         //add first period
         $end_first = $this->get_period_end($first_week);
-        $range[] = array(
-                'string' => $this->date_range_string($first_week, $end_first),
+        $periods[] = array(
+                'string' => $this->period_string($first_week, $end_first),
                 'start'  => $first_week,
                 'end' => $end_first
         );
@@ -260,14 +175,19 @@ class Controller_Logs extends Controller_Template {
         while($period_end < $last_week){
             $period_start = strtotime("+ ".\Config::get('timetrack.period_length'), $period_start);
             $period_end = $this->get_period_end($period_start);
-            $range[] = array(
-                'string' => $this->date_range_string($period_start, $period_end),
+            $periods[] = array(
+                'string' => $this->period_string($period_start, $period_end),
                 'start'  => $period_start,
                 'end' => $period_end
             );
         }
+      
+      rsort($periods);//TODO optimize here
+      $data['periods'] = $periods;
+      
+      //forge the view
+      return View::forge('logs/partials/period_options', $data);
         
-        return $range;
     }
     
     /**
@@ -286,16 +206,16 @@ class Controller_Logs extends Controller_Template {
      * @param type $end_stamp
      * @return type
      */
-    private function date_range_string($start_stamp, $end_stamp){
+    private function period_string($start_stamp, $end_stamp){
         $format = \Config::get('timetrack.range_date_format');
         return date($format, $start_stamp)." - ".date($format, $end_stamp);
     }
     
-    public function action_logtable2(){
-        
-        //get period information
-        $period_start = Input::post('period');
-        
+    /**
+     * Construct and return the partial view for displaying timelog information
+     */
+    public function action_logtable3(){
+      
         //retrieve user / users
         $user = Input::post('user');
         if(is_null($user)){
@@ -309,123 +229,62 @@ class Controller_Logs extends Controller_Template {
             $user_list[] = Model_User::find($user);
         }
         
-        //set whether or not to round
-        $round = (!is_null(Input::post('round'))) ? true : false;
-        
-        //for each user, construct information for
-        //the view
-        foreach($user_list as $u){
-            
-            //retrieve logs for this user
-            list($days, $overall_total) = $this->fetch_logs_for_period($u->id, $round, $period_start);
-            
-            //setup data for user
-            $usr['days'] = $days;
-            $usr['id'] = $u->id;
-            $usr['total'] = Util::sec2hms($overall_total);
-            $usr['name'] = $u->fname." ".$u->lname;
-            $users[] = $usr;
-            
-        }
-        
-        $data['admin'] = Auth::member(\Config::get('timetrack.admin_group'));
-        $data['users'] = $users;
-        
+        //build the appropriate display
         $display_type = Input::post('display_type');
-        
-        //return the appropriate view based on the selected display type
-        
-        if($display_type == 'all'){
-          return new Response(View::forge('logs/logtable2', $data));
-        } else if($display_type == 'day_totals'){
-          return new Response(View::forge('logs/logtable2_day_totals', $data));
-        } else if($display_type == 'period_totals'){
-          return new Response(View::forge('logs/logtable2_period_totals', $data));
+        switch($display_type){
+        case 'all':
+
+          //get period information
+          $period_start = Input::post('period');
+
+          //set whether or not to round
+          $round = (!is_null(Input::post('round'))) ? true : false;
+
+          //for each user, construct information for
+          //the view
+          foreach($user_list as $u){
+
+            //create day partial views and get overall total
+            list($overall_total, $day_views) 
+                    = $this->forge_days($u->id, $period_start, $round);
+
+            //setup data for view
+            $usr['name'] = $u->fname.' '.$u->lname;
+            $usr['day_views'] = $day_views;
+            $usr['period_total'] = Util::sec2hms($overall_total);
+            $users[] = $usr;
+
+          }
+
+          $data['users'] = $users;
+          $data['admin'] = Auth::member(\Config::get('timetrack.admin_group'));
+
+          return View::forge('logs/logtable3', $data);
+
+          break;
         }
-        
+      
     }
     
     /**
-     * Fetch an array of formatted log data containing all the logs for the
-     * specified user split into days and the total amount of time logged
-     * 
-     * Data is returned in the following format:
-     * array(*array of DayLogContainer objects*, *total time recorded*)
-     * 
-     * @param type $id - id of the user
-     * @param type $round - true to round values, false to leave un-rounded
-     * @param type $start - 12am on the first day of the period
+     * Construct the partial view that displays all log information for a
+     * given day
+     * @param type $user_id - user ID whose data will be displayed
+     * @param type $day_start - start of the day (Unix timestamp)
+     * @param type $round - whether or not to round time values
+     * @return - array(total time for the day, day view)
      */
-    private function fetch_logs_for_period($id, $round, $start){
-        
-        //first day in the period
-        $start_day = $start;
-        
-        //last day of the period
-        $end_day = strtotime("+ ".\Config::get
-                ('timetrack.period_length')." -1 day", $start_day);
-        
-        $overall_total = 0;
-        $curr_day_start = $start_day;
-        
-        //cycle through days and grab all the logs for the user for that
-        //day
-        while($curr_day_start <= $end_day){
-            
-            //fetch logs for the day
-            $l = $this->fetch_logs_for_day($id, $round, $curr_day_start);
-            $day_logs[] = $l;
-            $overall_total += $l->total_time;
-            
-            //if the user was still clocked in on the day fetched, consume the
-            //rest of the days
-            if($l->clocked_out == false){
-                
-                //move to the next day
-                $curr_day_start += (24*60*60);//add one day in seconds
-                
-                while($curr_day_start <= $end_day){
-                    
-                    $dlc = new DayLogContainer();
-                    $dlc->clocked_out = false;
-                    $dlc->day_start = $curr_day_start;
-                    $dlc->day_label = date(\Config::get
-                        ('timetrack.log_date_format'), $curr_day_start);
-                    $dlc->total_time_string = "N/A";
-                    $day_logs[] = $dlc;
-                    $curr_day_start += (24*60*60);//add one day in seconds
-                    
-                }
-            }
-            
-            $curr_day_start += (24*60*60);//add one day in seconds
-        }
-        
-        return array($day_logs, $overall_total);
-    }
-    
-    /**
-     * Fetch all the logs for the given user that fit on the day specified
-     * @param type $id - id of the user
-     * @param type $round - whether or not to round logs
-     * @param type $day_start - timestamp that equals 12am on the desired day
-     * @return type
-     */
-    private function fetch_logs_for_day($id, $round, $day_start){
-        
+    private function forge_day($user_id, $day_start, $round){
+      
         //end of the day
         $day_end = $day_start + (24*60*60)-1; //one day minus one second in seconds
+        $day_total = 0;
+        $data['logs'] = array();
         
-        //variable to hold the logs
-        $day_log = new DayLogContainer();
-        $day_log->day_start = $day_start;
-        $day_log->day_label = date(\Config::get
-                ('timetrack.log_date_format'), $day_start);
-            
         //fetch all logs for the day that have been clocked out
         $logs_for_day = Model_Timelog::find('all', array(
             'where' => array(
-                array('user_id', $id),
+                array('user_id', $user_id),
                 array('clockin','>=',$day_start),
                 array('clockout', '<=', $day_end),
                 array('clockout', '!=', 0),
@@ -436,57 +295,138 @@ class Controller_Logs extends Controller_Template {
         //fetch any logs for the day that have not been clocked out
         $log_sans_clockout = Model_Timelog::find('last', array(
             'where' => array(
-                array('user_id', $id),
+                array('user_id', $user_id),
                 array('clockin', '>=', $day_start),
                 array('clockin', '<=', $day_end),
                 array('clockout', 0),
             ),
         ));
         
-        //there are full logs for this day
-        if(!empty($logs_for_day)){
-
-            $first = true;
-            foreach($logs_for_day as $log){
-
-                $lg = $this->parse_log($log, $round, false);
-              
-                //first log for the day
-                if($first){
-
-                    $day_log->first_log = $lg;
-                    $first = false;
-
-                //any additional logs
-                } else {
-                    $day_log->additional_logs[] = $lg;
-                }
-                
-                //add log time to the total time
-                $day_log->total_time += $lg->time;
-                
-            }
-            
-            //one last partial log exists for this day
-            if(!is_null($log_sans_clockout)){
-              
-              $day_log->additional_logs[] = $this->parse_log($log_sans_clockout, $round, true);
-              
-            }
-            
-
-        //there is only a partial log for this day
-        } else if(!is_null($log_sans_clockout)){
+        //there are no logs at all
+        if(empty($logs_for_day) && is_null($log_sans_clockout)){
           
-          $day_log->first_log = $this->parse_log($log_sans_clockout, $round, true);
+          //construct partial view for a log with an add log entry only
+          $log['id'] = 0;
+          $log['range'] = View::forge('logs/partials/log_range',
+                  array('no_logs_msg' => 'None'));
+          $log['time'] = 'N/A';
+          $log['controls'] = $this->forge_add_controls($user_id, $day_start);
+          array_push($data['logs'],$log);
+          
+          
+        //there is only an open log for this day
+        } else if(empty($logs_for_day)){
+          
+          //construct partial view for an open log
+          $log['id'] = $log_sans_clockout->id;
+          $parsed = $this->parse_log($log_sans_clockout,$round, true);
+          $log['range'] = View::forge('logs/partials/log_range', array(
+              'clocked_out' => false,
+              'clockin_string' => $parsed->clockin_string,
+              'clockout_string' => $parsed->clockout_string
+          ));
+          $log['time'] = $parsed->time_string;
+          $log['controls'] = View::forge('logs/partials/edit_controls');
+          array_push($data['logs'], $log);
+          
+          //construct log display for adding a log
+          $log['id'] = 0;
+          $log['range'] 
+                  = View::forge('logs/partials/log_range', array('no_logs_msg' => ''));
+          $log['time'] = '';
+          $log['controls'] 
+                  = View::forge('logs/partials/add_controls', array('disabled' => false));
+          array_push($data['logs'], $log);
+          
+        //there is at least one closed log for the day
+        } else {
+          
+          foreach($logs_for_day as $log_for_day){
+            
+            //create log views for each log
+            $log['id'] = $log_for_day->id;
+            $parsed = $this->parse_log($log_for_day, $round, false);
+            $log['range'] = View::forge('logs/partials/log_range', array(
+                'clocked_out' => true,
+                'clockin_string' => $parsed->clockin_string,
+                'clockout_string' => $parsed->clockout_string
+            ));
+            $log['time'] = $parsed->time_string;
+            $log['controls'] = View::forge('logs/partials/edit_controls');
+            array_push($data['logs'], $log);
+            $day_total += $parsed->time;
+            
+          }
+          
+          //if there is also a closed log for this day, create
+          //a view for that log
+          if(!is_null($log_sans_clockout)){
+            
+            $log['id'] = $log_sans_clockout->id;
+            $parsed = $this->parse_log($log_sans_clockout, $round, true);
+            $log['range'] = View::forge('logs/partials/log_range', array(
+                'clocked_out' => false,
+                'clockin_string' => $parsed->clockin_string,
+                'clockout_string' => $parsed->clockout_string
+            ));
+            $log['time'] = $parsed->time_string;
+            $log['controls'] = View::forge('logs/partials/edit_controls');
+            array_push($data['logs'], $log);
+            
+          }
+          
+          //create the add log entry for after all valid logs
+          $log['id'] = 0;
+          $log['range'] 
+                  = View::forge('logs/partials/log_range', array('no_logs_msg' => ''));
+          $log['time'] = '';
+          $log['controls'] = $this->forge_add_controls($user_id, $day_start);
+          array_push($data['logs'], $log);
+          
           
         }
-
-        //set string representing total of full logs
-        $day_log->total_time_string = Util::sec2hms($day_log->total_time);
         
-       
-        return $day_log;
+        //setup data for the view
+        $data['day_start'] = $day_start;
+        $data['day_label'] = date(\Config::get('timetrack.log_date_format'), $day_start);
+        $data['user_id'] = $user_id;
+        $data['admin'] = Auth::member(\Config::get('timetrack.admin_group'));
+          
+        return array($day_total, View::forge('logs/partials/day', $data));
+        
+    }
+
+    /**
+     * Construct add controls and enable or disable them according
+     * to rules for when a log can be added
+     * @param type $user_id
+     * @param type $day_start
+     * @return type
+     */
+    private function forge_add_controls($user_id, $day_start){
+      
+      //determine which set of controls to add to the log
+      $open_log = Model_Timelog::find('first', array(
+          'where' => array(
+              array('user_id', $user_id),
+              array('clockout', 0)
+          )
+      ));
+
+      //there are no open logs or an open log comes after today, and the current
+      //day is not a date in the future.
+      //Add controls can be enabled
+      if((is_null($open_log) || $open_log->clockin > $day_start) && ($day_start < time())){
+        $controls = View::forge('logs/partials/add_controls'
+                , array('disabled' => false));
+      //there is an open log that started before today.
+      //Add controls should be disabled
+      } else {
+        $controls = View::forge('logs/partials/add_controls',
+                array('disabled' => true));
+      }
+      
+      return $controls;
     }
     
     /**
@@ -494,6 +434,7 @@ class Controller_Logs extends Controller_Template {
      * @param type $log - timelog object to parse
      * @param type $round - whether to round time values
      * @param type $partial - whether this is a partial log
+     * @return
      */
     private function parse_log($log, $round, $partial){
       
@@ -510,12 +451,10 @@ class Controller_Logs extends Controller_Template {
         $clockout = ($round) ? $clockout_rounded : $log->clockout;
 
         //store information about the log
-        $lg = new LogInfo();
+        $lg = new stdClass();
         $lg->id = $log->id;
-        $lg->clockin = $clockin;
-        $lg->clockout = ($partial) ? 0 : $clockout;
         $lg->clockin_string = date(\Config::get('timetrack.log_time_format'), $clockin);
-        $lg->clockout_string = ($partial) ? 'Not Clocked Out' : date(\Config::get('timetrack.log_time_format'), $clockout);
+        $lg->clockout_string = ($partial) ? 'Now' : date(\Config::get('timetrack.log_time_format'), $clockout);
         $lg->time = ($partial) ? 0 : $clockout_rounded - $clockin_rounded;
         $lg->time_string = ($partial) ? 'N/A' : Util::sec2hms($lg->time);
       
@@ -668,36 +607,48 @@ class Controller_Logs extends Controller_Template {
       return Response::forge(json_encode('true'));
       
     }
+
+    /**
+     * Create the HTML partial pages for each day in the time period that
+     * starts at "period_start"
+     * @param type $id - ID of user whose logs are displayed
+     * @param type $period_start - timestamp for period start
+     * @param type $round - whether or not to round times in display
+     */
+    private function forge_days($id, $period_start, $round){
+      
+        //first day in the period
+        $start_day = $period_start;
+        
+        //last day of the period
+        $end_day = strtotime("+ ".\Config::get
+                ('timetrack.period_length')." -1 day", $start_day);
+        
+        $curr_day_start = $start_day;
+        $overall_total = 0;
+        
+        //cycle through days and grab all the logs for the user for that
+        //day
+        while($curr_day_start <= $end_day){
+
+            //setup data for the view for this day
+            list($day_total, $day_view) 
+                    = $this->forge_day($id, $curr_day_start, $round);
+            
+            $overall_total += $day_total;
+            $day_views[] = $day_view;
+            
+            //update control variable
+            $curr_day_start += (24*60*60);//add one day in seconds
+
+        }
+        
+        return array($overall_total, $day_views);
+      
+    }
     
     
 }//end class
 
 
-
-
-
-class DayLogContainer{
-    
-    //data contained in a LogInfo object
-    public $day_start = 0;          //timestamp equaling 12am on the day
-    public $day_label = '';         //label for the day
-    public $first_log = null;       //first log of the day
-    public $additional_logs = array();    //any additional logs for the day
-    public $total_time = 0;         //total amount of time recorded on the day
-    public $total_time_string = ''; //string representing total time recorded
-    public $clocked_out = true;     //true unless the user is still logged in
-    
-}
-
-class LogInfo{
-  
-    //data tracked for a log
-    public $id = 0;                 //id of the log
-    public $clockin = 0;            //log clockin timestamp
-    public $clockout = 0;           //log clockout timestamp
-    public $clockin_string = '';    //string representing log clockin
-    public $clockout_string = '';   //string representing log clockout
-    public $time = 0;               //lenth of time represented by log
-    public $time_string = '';       //string representing log time
-}
 ?>

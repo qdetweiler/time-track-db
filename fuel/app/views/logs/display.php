@@ -1,23 +1,12 @@
-<script type="text/javascript">
-  var log_min_interval = <?php echo \Config::get('timetrack.log_interval');?>;
-  var valid_log = "<?php echo Uri::create('logs/valid_log');?>";
-  var remove = "<?php echo Uri::create('logs/remove')?>";
-</script>
-
 <div id="wrapper">
     <div id="controls">
-        <form id='control_form' action='<?php echo Uri::create('logs/logtable2')?>' method='post'>
+        <form id='control_form' action='
+            <?php echo $control_form_action?>' method='post'>
         <input type='hidden' name='id' value='<?php echo $id?>'/>
             <span id='range_selection'>
                 <label>Period</label>
                 <select name='period'>
-                    <?php if(count($range)):?>
-                        <?php for($i = (count($range)-1); $i >= 0; $i--):?>
-                        <option value='<?php echo $range[$i]['start']?>'><?php echo $range[$i]['string']?></option>
-                        <?php endfor; ?>
-                    <?php else :?>
-                        <option value=''>- none available -</option>
-                    <?php endif?>
+                  <?php echo $period_options?>
                 </select>
             </span>
             <?php if($admin):?>
@@ -26,7 +15,10 @@
                     <select name='user'>
                         <option value='All' selected>All</option>
                         <?php foreach($users as $user):?>
-                        <option value='<?php echo $user->id?>' <?php if($user->id == $selected_id)echo"selected"?>><?php echo $user->fname." ".$user->lname?></option>
+                        <option value='<?php echo $user->id?>' 
+                          <?php if($user->id == $selected_id)echo"selected"?>>
+                          <?php echo $user->fname." ".$user->lname?>
+                        </option>
                         <?php endforeach?>
                     </select>
                 </span>
@@ -44,7 +36,9 @@
                 </select>
             </span>
             <span id='button'>
-                <input id="update_button" class="white_button" type='submit' name='submit' value='Update' <?php if(!count($range)) echo "disabled"?>/>
+                <input id="update_button" class="white_button" type='submit' 
+                       name='submit' value='Update'
+                         <?php if($update_disabled) echo "disabled"?>/>
             </span>
         </form>
     </div>

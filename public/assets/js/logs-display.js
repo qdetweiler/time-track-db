@@ -10,6 +10,7 @@ $(document).ready(function(){
             $('#logs').html(data);
             setup_logtable();
         });
+        
         return false;
     });
     

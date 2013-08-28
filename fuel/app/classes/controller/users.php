@@ -40,8 +40,8 @@ class Controller_Users extends Controller_Template {
         
         //create view
         $this->template->title = 'Users List';
-        $this->template->page_css = array('users_list.css');
-        $this->template->page_js = array('users-list.js');
+        $this->template->css = array('users_list.css');
+        $this->template->js = array('users-list.js');
         $this->template->content = View::forge('users/list', $data);
         
     }
@@ -91,7 +91,7 @@ class Controller_Users extends Controller_Template {
                 $data['temp_password'] = $temp_password;
                 
                 $this->template->title = "Success!";
-                $this->template->page_css = array('users_add_success.css');
+                $this->template->css = array('users_add_success.css');
                 $this->template->content = View::forge('users/add_success', $data);
                 return;
                 
@@ -125,7 +125,7 @@ class Controller_Users extends Controller_Template {
         
         //setup view
         $this->template->title = "Add User";
-        $this->template->page_css = array('user_add.css');
+        $this->template->css = array('user_add.css');
         $this->template->content = View::forge('users/add', $data);
         
     }
@@ -307,7 +307,7 @@ class Controller_Users extends Controller_Template {
         $data = isset($data) ? $data : array();
         
         $this->template->title ="Password Reset";
-        $this->template->page_css = array('user_reset_pass.css');
+        $this->template->css = array('user_reset_pass.css');
         $this->template->content = View::forge('users/reset_pass', $data);
         
     }
@@ -342,7 +342,7 @@ class Controller_Users extends Controller_Template {
         
         //create the view
         $this->template->title = "Success!";
-        $this->template->page_css = array('users_add_success.css');
+        $this->template->css = array('users_add_success.css');
         $this->template->content = View::forge('users/reset_success', $data);
         
     }

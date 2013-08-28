@@ -5,6 +5,45 @@
     Description:
         Purpose of the stylesheet follows.
 */
+table{
+    display:block;
+    margin:auto;
+    margin-top:20px;
+    border:3px solid #251f55;
+    background-color:white;
+    padding:15px 10px;
+    border-collapse:collapse;
+}
+
+tr, td {
+    padding:5px 20px;
+}
+
+thead td{
+    font-weight:bold;
+    font-size:115%;
+}
+
+#col_titles td, #no_logs_msg {
+    padding-top:20px;
+    padding-bottom:10px;
+}
+
+#user_info {
+    border-bottom:1px solid #cccccc;
+    font-size:125%;
+}
+
+#overall_total {
+    font-weight:bold;
+    padding-top:15px;
+}
+
+#update_button{
+    padding-top:5px;
+    padding-bottom:5px;
+}
+
 .user_info {
   margin-bottom:20px;
 }
@@ -18,6 +57,13 @@
 }
 
 .day {
+  min-width:75px;
+  font-weight:bold;
+  float:left;
+  padding:5px;
+}
+
+.log_display .day {
   min-width:75px;
   padding: 5px;
 }
@@ -41,8 +87,12 @@
   padding-left:5px;
 }
 
-.day_display .controls{
+.log_display .controls, .add_log .controls {
   font-size:80%;
+}
+
+.log_display, .add_log {
+  padding:2px 5px;
 }
 
 .day_display {
@@ -50,24 +100,27 @@
   margin-bottom:5px;
 }
 
-.day_label {
-  float:left;
-  width:80px;
-  font-weight:bold;
-  padding:5px;
-  position:relative;
-  top:2px;
-}
-
-.log_display {
-  margin:3px 3px 3px 85px;
+.a_log {
+  margin-left:85px;
   padding:0px 3px;
   border: 1px solid #e6e6e6;
   border-radius: 10px;
   font-size:90%;
 }
 
-.controls input {
+.a_log_head {
+  margin-left:85px;
+  padding: 0px 3px;
+}
+
+.controls a {
+  margin-right:5px;
+}
+
+p.disabled_link {
+  display:inline;
+  color:grey;
+  text-decoration:none;
   margin-right:5px;
 }
 
@@ -85,17 +138,11 @@
 
 .time_input {
   display:inline;
-  max-width:4.5em;
+  max-width:5em;
 }
 
-.time_input:disabled {
-  background:none;
-  border:none;
-  color:black;
-}
-
-.input_spn .hyphen{
-  margin-right:2px;
+.log_form_spn p , .add_log_form_spn p{
+  display:inline;
 }
 
 .log_range {
