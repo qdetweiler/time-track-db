@@ -19,9 +19,14 @@
   <?php //*************    'table' header    ***********************?>
   <div class='head'>
       <span class='day'><h3>Day</h3></span>
+      <?php if($full):?>
       <span class='log_range'><h3>Logs</h3></span>
+      <?php endif?>
       <span class='log_time'><h3>Time</h3></span>
-      <?php if($admin):?>
+      <?php if($full && $showtype):?>
+      <span class='log_type'><h3>Type</h3></span>
+      <?php endif?>
+      <?php if($admin && $full) :?>
         <span class='controls'><h3>Controls</h3></span>
       <?php endif?>
   </div>

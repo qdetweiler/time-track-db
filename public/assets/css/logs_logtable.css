@@ -23,7 +23,7 @@
 }
 
 .log_range {
-  min-width:200px;
+  min-width:170px;
   margin-right:20px;
   padding-left:5px;
 }
@@ -33,6 +33,12 @@
   margin-right:20px;
   padding:3px;
 
+}
+
+.log_type {
+  min-width:100px;
+  margin-right:20px;
+  padding:3px;
 }
 
 .controls {
@@ -57,6 +63,7 @@
   padding:5px;
   position:relative;
   top:2px;
+  left:2px;
 }
 
 .log_display {

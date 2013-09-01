@@ -7,7 +7,7 @@
 <div class='content_box' id='clock_box'>
   
   <div id='clock_wrapper' class='grey_box rounded'>
-    <h3>Current Time: </h3><h3 id="clock"></h3>
+    <h3>Current Time: </h3><h3 id="clock"><?php echo $time?></h3>
   </div>
   
   <div id='button_wrapper'>

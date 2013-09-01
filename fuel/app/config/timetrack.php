@@ -33,8 +33,9 @@ return array(
      * Log related configuration options
      */
     
-    //first date of first recorded pay period (date-time)
-    'log_start_date' => '2013-06-30',
+    //Unix timestamp of the start of the first pay period
+    //Note:  make sure "period start day"
+    'first_period_start' => 1374984000,
     
     //minimum interval allowed for a time log in minutes
     'log_interval' => 15,
@@ -42,11 +43,13 @@ return array(
     //password lifespan
     'password_lifespan' => '3 months',
     
-    //day on which to start a period
-    'period_start_day' => "Sunday",
-    
-    //length of a period
+    //length of a period (make sure these match!)
     'period_length' => '1 week',
+    'period_length_seconds' => 604800,
+    
+    
+    //maximum number of periods to display
+    'max_periods' => 10,
     
     //format for the display of period start and end dates
     'range_date_format' => 'm/d/y',
@@ -56,6 +59,16 @@ return array(
     
     //format for dates used in the log table
     'log_date_format' => 'n / j',
+    
+    //log type definitions
+    //Note:  -whatever is at value 0 will be the default
+    //       -any entries above 0 are considered payed time off (there is
+    //            currently no way to specify non-payed time off)
+    'log_types' => array(
+        0 => 'Standard',//
+        1 => 'Vacation',
+        2 => 'Sick',
+    )
     
 );
 

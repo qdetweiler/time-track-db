@@ -27,6 +27,10 @@
                 <input type='checkbox' name='round' value='true' checked/>
                 <label>Round Times</label>
             </span>
+            <span id='showtype'>
+                <input type='checkbox' name='showtype' value='false'/>
+                <label>Show Type</label>
+            </span>
             <span id='round'>
                 <label>Display</label>
                 <select name='display_type'>
@@ -41,6 +45,11 @@
                          <?php if($update_disabled) echo "disabled"?>/>
             </span>
         </form>
+      <div id='show_older'>
+        <form name='show_older' action='<?php echo Uri::create('logs/toggle_older')?>' method='post'>
+          <input type='submit' class='hyperlink' name='show_old' value='<?php echo $older_logs_label?>'/>
+        </form>
+      </div>
     </div>
     <div id="logs">
     </div>

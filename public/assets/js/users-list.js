@@ -10,11 +10,13 @@ $(document).ready(function(){
         }
     });
     
-    $('.cl_in').click(function(){
+    $('.cl_in').click(function(event){
       clockout($(this));
+      event.preventDefault();
     });
-    $('.cl_out').click(function(){
+    $('.cl_out').click(function(event){
       clockin($(this));
+      event.preventDefault();
     });
     
 });
@@ -23,10 +25,11 @@ function clockin(th){
       th.parent().ajaxSubmit(function(data){
         th.removeClass('cl_out');
         th.addClass('cl_in');
-        th.html("Clocked In");
+        th.val("Clocked In");
         th.unbind();
-        th.click(function(){
+        th.click(function(event){
           clockout(th);
+          event.preventDefault();
         });
       });
       return false;
@@ -36,10 +39,11 @@ var clockout = function(th){
       th.parent().ajaxSubmit(function(data){
         th.removeClass('cl_in');
         th.addClass('cl_out');
-        th.html("Clocked Out");
+        th.val("Clocked Out");
         th.unbind();
-        th.click(function(){
+        th.click(function(event){
           clockin(th);
+          event.preventDefault();
         });
       });
       return false;

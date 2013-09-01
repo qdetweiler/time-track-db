@@ -1,7 +1,7 @@
 var time_format_regex = RegExp("^\\d\\d?:\\d\\d (pm|Pm|PM|Am|am|AM)");
-var log_min_interval = 15;
 var prev_start = '';
 var prev_end = '';
+var prev_type = '';
 
 /* 
  * To change this template, choose Tools | Templates
@@ -10,294 +10,11 @@ var prev_end = '';
 function setup_logtable(){
 
   setup_edit_buttons();
-  
-  
-  /***********************  Cancel Button **********************/
-  $('.log_cancel_button').on("click",function(){
-    
-    //show log text span
-    $(this).closest('.a_log').find('.log_text_spn').removeClass('hidden');
-    
-    //unhide log text form
-    $(this).closest('.a_log').find('.log_form_spn').addClass('hidden');
-    
-    //hide submit and cancel buttons for this log
-    $(this).closest('.controls').find('.buttons2').addClass('hidden');
-    
-    //show all edit and remove buttons
-    $('.buttons1').removeClass('hidden');
-    
-    //hide all edit and remove disabled links
-    $('.disabled_buttons1').addClass('hidden');
-    
-    //show add buttons
-    $('.add_log_enabled').removeClass('hidden');
-    $('.add_button_disabled').addClass('hidden');
-    
-    //replace fields with old values
-    var log_text_spn = $(this).closest('.a_log').find('.log_text_spn');
-    var text = log_text_spn.children('p').html();
-    //console.log(text);
-    var split = text.split(' - ');
-    //console.log(split);
-    
-    var log_form_spn = log_text_spn.siblings('.log_form_spn');
-    //console.log(log_form_spn);
-    var start_input = log_form_spn.find('.time_input').first();
-    //console.log(start_input);
-    var end_input = log_form_spn.find('.time_input').last();
-    //console.log(end_input);
-    
-    start_input.val(split[0]);
-    end_input.val(split[1]);
-
-    return false;
-    
-  });
-  
-  /************************  Add Log Cancel Button  ********************/
-  $('.add_log_cancel_button').on("click",function(){
-    
-    //show log text span
-    $(this).closest('.a_log').find('.no_logs_p').removeClass('hidden');
-    
-    //hide submit and cancel buttons for this log
-    $(this).closest('.controls').find('.buttons2').addClass('hidden');
-    
-    //show all edit and remove buttons
-    $('.buttons1').removeClass('hidden');
-    
-    //hide all edit and remove disabled links
-    $('.disabled_buttons1').addClass('hidden');
-    
-    //show add buttons
-    $('.add_log_enabled').removeClass('hidden');
-    $('.add_button_disabled').addClass('hidden');
-    
-    $(this).parent().siblings('.add_button').removeClass('hidden');
-    
-    //hide form
-    $(this).closest('.a_log').find('.add_log_form_spn').addClass('hidden');
-    
-    //reset form values to blank
-    var time_inputs = $(this).closest('.a_log').find('.add_log_form_frm').children('.time_input');
-    time_inputs.val("");
-    
-    return false;
-    
-  });
-  
-  
-  /************************  Submit Button for Edited Logs  *******************/
-  $('.log_submit_button').on("click",function(){
-    
-    //day stamp needed for verifying that logs don't overlap
-    var day_stamp = $(this).closest('.day_display').children('.day_start').val();
-    
-    //make sure start time comes before end time
-    var time_selectors = $(this).closest('.a_log')
-            .find('.log_form_frm').children('.time_input');
-    var start_time_s = time_selectors.first().val();
-    var end_time_s = time_selectors.last().val();
-    
-    var form = $(this).closest('.a_log').find('.log_form_frm');
-    var clocked_out = form.children('[name=clocked_out]').first().val();
-    var id = form.children('[name=id]').first().val();
-    var user_id = form.children('[name=user_id]').first().val();
-    
-    //invalid start time
-    if(start_time_s.match(time_format_regex) === null){
-      
-      alert('Invalid starting time');
-      return false;
-      
-    }
-    
-    //invalid end time
-    if(clocked_out === 'true' && end_time_s.match(time_format_regex) === null ){
-      
-      alert('Invalid ending time');
-      return false;
-      
-    }
-    
-    //clocked out
-    if(clocked_out === 'true' || end_time_s.match(time_format_regex) !== null){
-      var start_time_d = convert_hhmmtt(start_time_s);
-      var end_time_d = convert_hhmmtt(end_time_s);
-      
-      if(start_time_d < end_time_d){
-      
-        var edit_form = $(this).closest('.a_log').find('.log_form_frm');
-        var control_form = $("#control_form");
-
-        //make sure this timeframe does not overlap with other logs
-        $.ajax({
-              type: "POST",
-              url:valid_log_uri,
-              data:{
-                day_stamp:day_stamp,
-                start:start_time_s,
-                end:end_time_s,
-                id:id,
-                user_id:user_id
-              },
-              success:function(data){
-                if(data){
-                    edit_form.ajaxSubmit(function(){control_form.submit();});
-                } else {
-                    alert('Timelogs cannot overlap.');
-                }
-              },
-              dataType:"json"
-        });
-
-      } else {
-
-        alert("Start time must come before end time.");
-
-      }
-      
-    } else {
-      
-      $(this).closest('.a_log').find('.log_form_frm')
-              .ajaxSubmit(function(data){
-                console.log(data);
-                $('#control_form').submit();
-              });
-    }
-    
-    
-
-    return false;
-    
-  });
-  
-  $('.add_log_submit_button').click(function(){
-    
-    var day_stamp = $(this).closest('.day_display').children('.day_start').val();
-    
-    //make sure start time comes before end time
-    var time_selectors = $(this).closest('.a_log')
-            .find('.add_log_form_frm').children('.time_input');
-    var start_time_s = time_selectors.first().val();
-    var end_time_s = time_selectors.last().val();
-    
-    //invalid start time
-    if(start_time_s.match(time_format_regex) === null){
-      
-      alert('Invalid starting time');
-      return false;
-      
-    }
-    
-    //invalid end time
-    if(end_time_s.match(time_format_regex) === null ){
-      
-      alert('Invalid ending time');
-      return false;
-      
-    }
-    
-    //clocked out
-    var start_time_d = convert_hhmmtt(start_time_s);
-    var end_time_d = convert_hhmmtt(end_time_s);
-
-    if(start_time_d < end_time_d){
-
-        var add_form = $(this).closest('.a_log').find('.add_log_form_frm');
-        var control_form = $("#control_form");
-
-        //make sure this timeframe does not overlap with other logs
-        $.ajax({
-              type: "POST",
-              url:valid_log_uri,
-              data:{
-                day_stamp:day_stamp,
-                start:start_time_s,
-                end:end_time_s
-              },
-              success:function(data){
-                if(data){
-                    add_form.ajaxSubmit(function(){control_form.submit();});
-                } else {
-                    alert('Timelogs cannot overlap.');
-                }
-              },
-              dataType:"json"
-        });
-
-      } else {
-        alert("Start time must come before end time.");
-      }
-      
-      return false;
-      
-  });
-  
-  
-  /*********************  Add Button   ******************/
-  $('.add_log_enabled a').click(function(){
-    
-    var a_log = $(this).closest('.a_log');
-    
-    //setup timepickers on hidden sliders
-
-      //are we supposed to round?
-      var round = $('#round').children('input').is(':checked');
-      var step_min = (round === true) ? log_min_interval : 1;
-      
-    var time_selectors = a_log.find('.add_log_form_frm').children('.time_input');
-
-    time_selectors.timepicker({
-        timeFormat:'hh:mm tt',
-        controlType: 'slider',
-        stepMinute: step_min,
-        defaultValue:'12:00 am'
-      });
-    $(this).timepicker("refresh");
-    
-    
-    //hide the logs paragraph label
-    a_log.find('.no_logs_p').addClass('hidden');
-    
-    //hide the add button
-    $(this).closest('.add_button').addClass('hidden');
-    
-    //hide all the other controls
-        //hide all edit and remove buttons
-        $('.buttons1').addClass('hidden');
-        
-        //unhide all edit and remove disabled links
-        $('.disabled_buttons1').removeClass('hidden');
-
-        //hide add buttons
-        $('.add_log_enabled').addClass('hidden');
-        $('.add_button_disabled').removeClass('hidden');
-    
-    //unhide the form
-    a_log.find('.add_log_form_spn').removeClass('hidden');
-    
-    //show the submit and cancel buttons
-    $(this).closest('.add_button').siblings('.buttons2').removeClass('hidden');
-    
-    
-    return false;
-    
-    
-  });
-  
-  /**********************  Remove Button Interactions  *****************/
-  $('.log_remove_button').on('click', function(){
-    
-    if(confirm('Are you sure you want to remove this log from the database?')){
-      
-      var id = $(this).closest('.a_log').find('.log_form_frm').find('[name=id]').val();
-      $.post(remove_uri, {id:id}, function(data){$('#control_form').submit();}, 'json');
-      
-    }
-    
-  });
+  setup_remove_buttons();
+  setup_cancel_buttons();
+  setup_add_buttons();
+  setup_add_submit_buttons();
+  setup_edit_submit_buttons();
   
 };
 
@@ -309,11 +26,21 @@ function setup_edit_buttons(){
   
   $('.edit_b').on("click", function(event){
     
-    //hide all visible controls on the page
-    $('.buttons_1').toggleClass('hidden');
+    //disable all visible controls on the page
+    $('.buttons_1 input').prop('disabled', true);
+    
+    //hide edit and delete buttons from this form
+    $(this).parent().toggleClass('hidden');
     
     //unhide submit and cancel buttons for this form
     $(this).parent().siblings('.buttons_2').toggleClass('hidden');
+    
+    //swap type elements to allow type selection
+    $(this).closest('form').find('.type_display').first().toggleClass('hidden');
+    $(this).closest('form').find('.type_select').first().toggleClass('hidden');
+    
+    //store current type in case cancellation is required
+    prev_type = $(this).closest('form').find('.type_select').find(':selected').val();
     
     //setup dates for input elements
     var form_input = $(this).closest('form').find('.time_input');
@@ -359,6 +86,282 @@ function setup_edit_buttons(){
     return false;
     
   });
+}
+
+/**
+ * Setup the interactions on the remove button
+ * @returns {undefined}
+ */
+function setup_remove_buttons(){
+
+  $('.remove_b').click(function(event){
+      //if user wants to remove the log, submit the form, then
+      //refresh the view
+      if(confirm('Are you sure you want to remove this log?')){
+        $(this).closest('form').ajaxSubmit(
+            {
+              success:ajax_response,
+              data:{action:'remove'}
+       });
+      }
+      event.preventDefault();
+      return false;
+  });
+}
+
+
+/**
+ * Setup the interactions on the cancel buttons
+ * @returns {undefined}
+ */
+function setup_cancel_buttons(){
+  
+  $('.cancel_b').click(function(event){
+    
+    //reset input values to their originals and disable them
+    var form_input = $(this).closest('form').find('.time_input');
+    
+      $(form_input).each(function(index){
+
+        //capture current values in case a cancellation is required
+        var time = (index === 0) ? prev_start : prev_end;
+        
+        //this is a valid time
+        if(time.match(time_format_regex) !== null){
+          var date = convert_hhmmtt(time);
+          $(this).timepicker("setDate", date);
+
+        //this is not a valid time
+        } else {
+          
+          var val = $(this).closest('form').find('.time_input').first().val();
+          
+          //first input field is valid.  Set this field based on it's value.
+          if(val.match(time_format_regex)){
+            var date = convert_hhmmtt(val);
+            date.setMinutes(date.getMinutes()+log_min_interval);
+            $(this).timepicker("setDate", date);
+          }
+          
+        }
+        
+        $(this).val(time);
+        $(this).prop('disabled', true);
+
+      });
+
+    //enable all buttons
+    $('.buttons_1 input').prop('disabled', false);
+    
+    //hide the cancel buttons
+    $(this).parent().toggleClass('hidden');
+    
+    //unhide the edit and remove buttons
+    $(this).parent().siblings('.buttons_1').toggleClass('hidden');
+    
+    //swap type elements to hide type selection
+    $(this).closest('form').find('.type_display').first().toggleClass('hidden');
+    $(this).closest('form').find('.type_select').first().toggleClass('hidden');
+    
+    //revert selected type
+    $(this).closest('form').find('.type_select')
+            .find('[value='+prev_type+']').prop('selected', true);
+    
+    //in case this is a cancellation of an add operation
+    var log_range = $(this).closest('form').find('.log_range');
+    log_range.children('.no_logs_p').toggleClass('hidden');
+    log_range.children('.add_input_spn').toggleClass('hidden');
+    
+    return false;
+    
+  });
+}
+
+/**
+ * Setup interactions on the add buttons
+ * @returns {undefined}
+ */
+function setup_add_buttons(){
+  
+  $('.add_b').click(function(event){
+    
+     //disable all other controls
+     $('.buttons_1 input').prop('disabled', true);
+
+     //hide the add button
+     $(this).parent().toggleClass('hidden');
+
+     //reveal the submit and cancel buttons
+     $(this).parent().siblings('.buttons_2').toggleClass('hidden');
+     
+    //swap type elements to allow type selection
+    $(this).closest('form').find('.type_display').first().toggleClass('hidden');
+    $(this).closest('form').find('.type_select').first().toggleClass('hidden');
+    
+    //store current type in case cancellation is required
+    prev_type = $(this).closest('form').find('.type_select').find(':selected').val();
+
+     //setup the input fields
+     var time_inputs = $(this).closest('form').find('.time_input');
+
+        //setup timepickers on hidden sliders
+
+        //are we supposed to round?
+        var round = $('#round').children('input').is(':checked');
+        var step_min = (round === true) ? log_min_interval : 1;
+
+        time_inputs.timepicker({
+            timeFormat:'hh:mm tt',
+            controlType: 'slider',
+            stepMinute: step_min,
+            defaultValue:'12:00 am'
+          });
+        $(this).timepicker("refresh");
+        
+        time_inputs.val('12:00 am');
+
+      //hide no_logs_p
+      var log_range = $(this).closest('form').find('.log_range');
+      log_range.children('.no_logs_p').toggleClass('hidden');
+
+      //unhide the input fields
+      $(this).closest('form').find('.time_input').prop('disabled', false);
+      log_range.children('.add_input_spn').toggleClass('hidden');
+
+      return false;
+    
+  });
+}
+
+
+/**
+ * Evaluates the information in the given JQuery input elements to determine
+ * whether the values meet base requirements.
+ * @param {JQuery} time_inputs
+ * @param {boolean} clocked_out - whether or not the log was originally clocked out
+ * @returns boolean - null if valid, string error message if not valid
+ */
+function validate_times(time_inputs, clocked_out){
+  
+    var valid = null;
+  
+    //make sure start time comes before end time
+    var start_time_s = time_inputs.first().val();
+    var end_time_s = time_inputs.last().val();
+    
+    //invalid start time
+    if(start_time_s.match(time_format_regex) === null){
+      return 'Invalid starting time';
+    }
+    
+    //invalid end time
+    if(clocked_out === true && end_time_s.match(time_format_regex) === null ){
+      return 'Invalid ending time';
+    }
+    
+    //clocked out
+    if(clocked_out === true || end_time_s.match(time_format_regex) !== null){
+      
+    var start_time_d = convert_hhmmtt(start_time_s);
+      var end_time_d = convert_hhmmtt(end_time_s);
+      
+      if(start_time_d < end_time_d){
+        valid = null;
+      } else {
+        return "Start time must come before end time.";
+      }
+    
+    //not clocked out
+    } else {
+      //do nothing.  start time is valid, and end time does not matter
+    }
+
+    return valid;
+  
+}
+
+/**
+ * Setup interactions on buttons that submit form for the addition of a new
+ * timelog entry
+ * @returns {undefined}
+ */
+function setup_add_submit_buttons(){
+  
+  $('.add_submit_b').click(function(event){
+    
+    //validate values in the time fields
+    var time_inputs = $(this).closest('form').find('.time_input');
+      //log was originally open if the value of the end time was an invalid time
+      //and the log id was not 0
+    var clocked_out = !($(this).closest('form').find('[name=log_id]').val() !== '0' &&
+                       prev_end.match(time_format_regex) === null);
+    
+    var validation_msg = validate_times(time_inputs, clocked_out);
+    if(validation_msg === null){
+      
+      $(this).closest('form').ajaxSubmit({
+              success:ajax_response,
+              data:{action:'add'}
+      });
+      
+    } else {
+      alert(validation_msg);
+    }
+    
+    return false;
+    
+  });
+  
+}
+
+/**
+ * Setup interactions for buttons submitting edited logs
+ * @returns {undefined}
+ */
+function setup_edit_submit_buttons(){
+  
+  $('.edit_submit_b').click(function(event){
+    
+    //validate values in the time fields
+    var time_inputs = $(this).closest('form').find('.time_input');
+      //log was originally open if the value of the end time was an invalid time
+      //and the log id was not 0
+    var clocked_out = !($(this).closest('form').find('[name=log_id]').val() !== '0' &&
+                       prev_end.match(time_format_regex) === null);
+    
+    var validation_msg = validate_times(time_inputs, clocked_out);
+    if(validation_msg === null){
+      
+      $(this).closest('form').ajaxSubmit({
+          success:ajax_response,
+          data:{action:'edit'}
+      });
+      
+    } else {
+      alert(validation_msg);
+    }
+    
+    return false;
+    
+  });
+  
+}
+
+/**
+ * Standard method used in response to a CRUD call
+ * @param {type} data
+ * @returns {undefined}
+ */
+var ajax_response = function (data){
+    var json = $.parseJSON(data);
+    //if we are supposed to display a message, do it!
+    if(json.show_msg){
+      alert(json.msg);
+    }
+    //if json call succeeded, refresh the view
+    if(json.success){
+      $('#control_form').submit();
+    }
 }
 
 /**

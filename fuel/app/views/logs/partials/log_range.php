@@ -7,7 +7,7 @@
 ?>
 <?php if(isset($no_logs_msg)):?>
   <p class='no_logs_p'><?php echo($no_logs_msg)?></p>
-  <span class="input_spn hidden">
+  <span class="add_input_spn hidden">
     <input type="text" name="start_time" class="time_input" disabled/>
     <span class='hyphen'> - </span>
     <input type="text" name="end_time" class="time_input" disabled/>

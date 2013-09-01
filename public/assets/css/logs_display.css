@@ -17,6 +17,7 @@
     border:3px solid #251f55;
     padding:7px 7px;
     margin-bottom:10px;
+    position:relative;
 }
 
 #control_form span{
@@ -31,4 +32,12 @@
 
 span {
     display:inline-block;
+}
+
+#show_older {
+  display:inline-block;
+  position:absolute;
+  right:7px;
+  bottom:5px;
+  font-size:70%;
 }

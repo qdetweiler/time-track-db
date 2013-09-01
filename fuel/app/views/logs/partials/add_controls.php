@@ -10,10 +10,10 @@
 </span>
 <span class='buttons_2 hidden'>
   <input type='submit' class='hyperlink cancel_b' value='Cancel'/>
-  <input type='submit' name='add' class='hyperlink' value='Submit'/>
+  <input type='submit' name='add' class='hyperlink add_submit_b' value='Submit'/>
 </span>
 <?php else:?>
-<span class='buttons_1'>
+<span class='buttons_3'>
   <input type='submit' class='hyperlink add_b_disabled' value='Add' disabled/>
 </span>
 <?php endif; ?>

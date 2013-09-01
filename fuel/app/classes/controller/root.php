@@ -210,6 +210,13 @@ class Controller_Root extends Controller_Template {
       $data['last_clock_s'] = 'Last Clocked Out:  '
               . date(\Config::get('timetrack.last_clock_format'), $last_log->clockout);
     }
+    
+    $data['time'] = date(\Config::get('timetrack.clock_format'), time());
+    
+    //setup local javascript variables
+    $time_uri = Uri::create('root/time');
+    $js = "var time_uri = \"$time_uri\";";
+    $this->template->script = View::forge("script", array('js' => $js), false);
 
     //build view
     $this->template->title = 'Home';
@@ -273,6 +280,7 @@ class Controller_Root extends Controller_Template {
       $log->user_id = $id;
       $log->clockin = time();
       $log->clockout = 0;
+      $log->type = 0;
       $log->save();
     }
 
@@ -289,10 +297,11 @@ class Controller_Root extends Controller_Template {
   private function perform_clockout($id) {
 
     //pull the last log for the user
-    $log = Model_Timelog::find('last', array(
-                'where' => array(
-                    array('user_id', $id),
-                )
+    $log = Model_Timelog::find('first', array(
+      'where' => array(
+          array('user_id', $id),
+      ),
+      'order_by' => array('clockin' => 'desc')
     ));
 
     $time = time();
@@ -306,8 +315,8 @@ class Controller_Root extends Controller_Template {
       //at least one LOG_INTERVAL has passed
     } else {
 
-      //if this log is on a different day than the previous one,
-      //split it into multiple logs
+      //if this log's clockout is on a different day than it's clockin, split
+      //it into multiple days
       while (date('d/m/y', $time) != date('d/m/y', $log->clockin)) {
 
         $prev_day = $log->clockin;
@@ -316,6 +325,7 @@ class Controller_Root extends Controller_Template {
         $log = Model_Timelog::forge();
         $log->user_id = $id;
         $log->clockin = strtotime('tomorrow', $prev_day);
+        $log->type = 0;
       }
 
       $log->clockout = $time;
