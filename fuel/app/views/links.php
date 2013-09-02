@@ -24,6 +24,7 @@
     <?php if($id):?>
         <li><a href='<?php echo Uri::create('root/home')?>'>Home</a></li>
         <li><a href='<?php echo Uri::create('logs/display')?>'>Logs</a></li>
+        <li><a href='<?php echo Uri::create('logs/pto')?>'>PTO</a></li>
     <?php endif?>
     <?php if(isset($admin) && $admin):?>
     <li><a href="<?php echo Uri::create('users/list')?>">Users</a></li>

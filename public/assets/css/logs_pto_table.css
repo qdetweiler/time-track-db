@@ -1,0 +1,120 @@
+/* 
+    Document   : logs_logtable
+    Created on : May 27, 2013, 6:37:50 PM
+    Author     : Quinn
+    Description:
+        Purpose of the stylesheet follows.
+*/
+.user_info {
+  margin-bottom:20px;
+}
+
+.divider {
+  padding-bottom:5px;
+}
+
+.head > h3 {
+  display:inline;
+}
+
+.day {
+  min-width:100px;
+  padding: 5px;
+}
+
+.log_range {
+  min-width:170px;
+  margin-right:20px;
+  padding-left:5px;
+}
+
+.log_time {
+  min-width:100px;
+  margin-right:20px;
+  padding:3px;
+
+}
+
+.log_type {
+  min-width:100px;
+  margin-right:20px;
+  padding:3px;
+}
+
+.controls {
+  padding:5px;
+  min-width:40px;
+  padding-left:5px;
+}
+
+.day_display .controls{
+  font-size:80%;
+}
+
+.day_display {
+  border:1px solid #251f55;
+  margin-bottom:5px;
+}
+
+.day_label {
+  float:left;
+  width:80px;
+  font-weight:bold;
+  padding:5px;
+  position:relative;
+  top:2px;
+  left:2px;
+}
+
+.pto_log {
+  margin:2px 0px;
+  padding:0px 3px;
+  border: 1px solid #e6e6e6;
+  border-radius: 10px;
+}
+
+.controls input {
+  margin-right:5px;
+}
+
+.total_display{
+  margin-top:30px;
+  margin-left:5px;
+}
+
+.name {
+  margin-bottom:10px;
+  border:1px solid #251f55;
+  padding:3px;
+  text-align:center;
+}
+
+.time_input {
+  display:inline;
+  max-width:4.5em;
+}
+
+.time_input:disabled {
+  background:none;
+  border:none;
+  color:black;
+}
+
+.input_spn .hyphen{
+  margin-right:2px;
+}
+
+.log_range {
+  padding:3px;
+}
+
+.total_display_wrapper{
+  margin:10px 2px;
+  padding:5px;
+  border:1px solid #cccccc;
+}
+
+.pt_name {
+  display:inline-block;
+  min-width:250px;
+}

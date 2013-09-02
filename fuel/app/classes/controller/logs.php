@@ -202,6 +202,35 @@ class Controller_Logs extends Controller_Template {
     }
     
     /**
+     * Forge select options for displaying PTO logs
+     * @param type $type
+     */
+    private function forge_pto_options($type){
+      
+      $data['types'] = array();
+      $types = Config::get('timetrack.log_types');
+      
+      //for each type, setup information for the view
+      foreach($types as $type_v => $type_s){
+        $t['type_val'] = $type_v;
+        $t['type_string'] = $type_s;
+        $t['selected'] = ($type_v == $type);
+        array_push($data['types'], $t);
+      }
+      
+      array_shift($data['types']);//remove '0' entry
+      
+      //add entry for 'all'
+      $t['type_val'] = 'all';
+      $t['type_string'] = 'All';
+      $t['selected'] = ($t['type_val'] == $type);
+      array_unshift($data['types'], $t);
+      
+      return View::forge('logs/partials/pto_type_options', $data);
+      
+    }
+    
+    /**
      * Round the given timestamp back to the start of the containing time period
      * @param type $timestamp
      */
@@ -384,6 +413,157 @@ class Controller_Logs extends Controller_Template {
           
         }
       
+    }
+    
+    /**
+     * generate the display used for the PTO page
+     */
+    public function action_pto(){
+       
+        //make sure user is authenticated
+        $id_info = Auth::get_user_id();
+        $id = $id_info[1];
+        if(!$id){
+            Response::redirect('root/home');
+        }
+        
+        $user_id = Input::param('id');
+        if(!is_null($user_id)){
+            //admin is viewing logs for another user
+            $data['selected_id'] = $user_id;
+        } else {
+            //admin is viewing own logs
+            $data['selected_id'] = $id;
+        }
+        
+        //create control form action
+        $data['control_form_action'] = Uri::create('logs/pto_table');
+        
+        //setup info for view
+        $data['id'] = $id;
+        $data['admin'] = Auth::member(\Config::get('timetrack.admin_group'));
+        $data['users'] = Model_User::find('all');
+        $data['start_date'] = date(\Config::get('timetrack.range_date_format'),
+                \Config::get('timetrack.first_period_start'));
+        $data['end_date'] = date(\Config::get('timetrack.range_date_format'),
+                time());
+        
+        $data['type_selection'] = $this->forge_pto_options('all');
+        
+        //setup css for page
+        $this->template->css = array('logs_pto.css','logs_pto_table.css');
+        
+        //setup javascript for page
+        $this->template->js = array('logs_pto.js', 'logs_pto_table.js',
+            'jquery-ui-timepicker-addon.js');
+        
+        //setup title
+        $this->template->title = "Paid Time Off";
+        $this->template->content = View::forge('logs/pto', $data);
+        
+      
+    }
+    
+    /**
+     * return the partial view that includes the PTO table
+     */
+    public function action_pto_table(){
+      
+        //retrieve user / users
+        $user = Input::post('user');
+        if(is_null($user)){
+            $id = Input::post('id');
+            $user_list[] = Model_User::find($id);
+            
+        } else if($user == 'All'){
+            $user_list = Model_User::find('all');
+            
+        } else {
+            $user_list[] = Model_User::find($user);
+        }
+        
+        $type = Input::post('type');
+        $start_date = Input::post('start_date');
+        $end_date = Input::post('end_date');
+        $data['show_type'] = $type == 'all'; //only display type if all types are being shown
+        $data['users'] = array();
+        $data['control_form_action'] = Uri::create('logs/pto_table');
+        
+        foreach($user_list as $user){
+          
+          $u['name'] = $user->fname.' '.$user->lname;
+          list($total, $views) = 
+                  $this->forge_pto_display($user->id, $type, $start_date, $end_date);
+          
+          $u['total'] = Util::sec2hms($total);
+          if($total == 0){
+            $u['no_logs_msg'] = "None found.";
+          }
+          $u['log_views'] = $views;
+          array_push($data['users'], $u);
+        }
+      
+        return View::forge('logs/pto_table', $data);
+    }
+    
+    /**
+     * Create a set of partial displays and a total for displaying information
+     * about PTO logs
+     * @param type $user_id - user for whom to show the logs
+     * @param type $type - type of logs to display
+     * @param type $start_date - first date from which to show logs
+     * @param type $end_date - last date from which to show logs
+     */
+    private function forge_pto_display($user_id, $type, $start_date, $end_date){
+
+      $total = 0;
+      
+      //setup type rule for getting logs
+      $type_rule = ($type == 'all') 
+              ? array('type', '>', '0') //even if we want all types, we want to skip standard logs 
+              : array('type', '=', $type);
+      
+      //get the logs
+      $logs = Model_Timelog::find('all', array(
+          'where' => array(
+              array('user_id', $user_id),
+              array('clockin', '>=', strtotime($start_date)),
+              array('clockout', '<=', (strtotime($end_date)+(86399))),
+              $type_rule,
+          )
+      ));
+      
+      //create the partial views
+      $views = array();
+      foreach($logs as $log){
+        list($time, $view) = $this->forge_pto_log($log, $type=='all');
+        $total += $time;
+        array_push($views, $view);
+      }
+      
+      return array($total, $views);
+    }
+    
+    /**
+     * Construct the view for a single PTO log based on a timelog object
+     * and return the log time and a view
+     * @param type $log
+     * @param type $showtype - whether or not to display type information
+     */
+    private function forge_pto_log($log, $showtype){
+
+      $parsed = $this->parse_log($log, true);
+      $time = $parsed->time;
+      
+      $data['day'] = date('m/d/y', $log->clockin);
+      $data['range'] = $parsed->clockin_string.' - '.$parsed->clockout_string;
+      $data['total'] = Util::sec2hms($time);
+      $data['show_type'] = $showtype;
+      $data['type'] = \Config::get('timetrack.log_types.'.$log->type);
+      
+      $view = View::forge('logs/partials/pto_log', $data);
+      
+      return array($time, $view);
     }
     
     /**
@@ -637,7 +817,7 @@ class Controller_Logs extends Controller_Template {
      * @param type $partial - whether this is a partial log
      * @return
      */
-    private function parse_log($log, $round, $partial){
+    private function parse_log($log, $round, $partial = false){
       
         //get rounded values
         $clockin_rounded 
