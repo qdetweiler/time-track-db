@@ -194,15 +194,23 @@ class Controller_Root extends Controller_Template {
     ));
 
 
+    //user is new
+    if(is_null($last_log)){
+        
+        $data['button_label'] = 'Clock In';
+        $data['action'] = Uri::create('root/clock_in');
+        $data['last_clock_s'] = 'N/A';
+        
+        
     //user is clocked in
-    if ($last_log->clockout == 0) {
+    } else if ($last_log->clockout == 0) {
 
       $data['button_label'] = 'Clock Out';
       $data['action'] = Uri::create('root/clock_out');
       $data['last_clock_s'] = 'Last Clocked In:  '
               . date(\Config::get('timetrack.last_clock_format'), $last_log->clockin);
 
-      //user is clocked out
+    //user is clocked out
     } else {
 
       $data['button_label'] = 'Clock In';
