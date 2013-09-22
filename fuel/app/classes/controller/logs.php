@@ -52,7 +52,9 @@ class Controller_Logs extends Controller_Template {
     private function build_standard_display($id){
         
         //setup period <select> options
-        $data['period_options'] = $this->forge_period_options($id);
+        $show_older = Session::get('show_older');
+        $limit = (is_null($show_older) || !$show_older);
+        $data['period_options'] = $this->forge_period_options($id, $limit);
         
         //if there are no logs for this user, disable the update button
         $data['update_disabled'] = ($this->first_log_clockin('all') == 0) ? true : false;
@@ -61,6 +63,7 @@ class Controller_Logs extends Controller_Template {
         $data['admin'] =false;
         $data['id'] = $id;
         $data['control_form_action'] = Uri::create('logs/logtable3');
+        $data['older_logs_label'] = ($limit) ? 'show older logs' : 'hide older logs';
         
         //setup view
         $this->template->title = "Timelogs";
@@ -113,12 +116,6 @@ class Controller_Logs extends Controller_Template {
      * Toggle whether or not older logs should be shown
      */
     public function action_toggle_older(){
-      
-      //if this operation was not initiated by an administrator, redirect
-      //to the home page
-      if(!Auth::member(\Config::get('timetrack.admin_group'))){
-        Response::redirect('root/home');
-      }
       
       $show_older = Session::get('show_older');
       Session::set('show_older', !$show_older);
