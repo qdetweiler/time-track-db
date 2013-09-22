@@ -255,7 +255,7 @@ class Controller_Logs extends Controller_Template {
       //there are no available pay periods for the specified user
       if($start_time == 0){
         $data['periods'] = array();
-        return View::forge('logs/partials/period_options');
+        return View::forge('logs/partials/period_options', $data);
       }
       
       //get timestamp for monday on the first and last pay periods available
