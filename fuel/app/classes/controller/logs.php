@@ -833,8 +833,22 @@ class Controller_Logs extends Controller_Template {
         $lg->id = $log->id;
         $lg->clockin_string = date(\Config::get('timetrack.log_time_format'), $clockin);
         $lg->clockout_string = ($partial) ? 'Now' : date(\Config::get('timetrack.log_time_format'), $clockout);
-        $lg->time = ($partial) ? 0 : $clockout_rounded - $clockin_rounded;
-        $lg->time_string = ($partial) ? 'N/A' : Util::sec2hms($lg->time);
+        
+        //store time information
+        $time = ($partial) ? 0 : $clockout_rounded - $clockin_rounded;
+        $time_string = ($partial) ? 'N/A' : Util::sec2hms($time);
+        
+        //apply auto-break if it is enabled
+        if(\Config::get('timetrack.auto-break.enable') == 'true'){
+            if($time > \Config::get('timetrack.auto-break.threshold')){
+                $time -= \Config::get('timetrack.auto-break.break_length');
+                $time_string =Util::sec2hms($time).' '.
+                        \Config::get('timetrack.auto-break.message');
+            }
+        }
+        
+        $lg->time = $time;
+        $lg->time_string = $time_string;
       
         return $lg;
         

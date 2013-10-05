@@ -68,6 +68,14 @@ return array(
         0 => 'Standard',//
         1 => 'Vacation',
         2 => 'Sick',
+    ),
+    
+    //auto-break settings
+    'auto-break' => array(
+      'enable' => 'true',
+      'threshold' => 21600,
+      'break_length' => 1800,
+      'message' => '(AB)' //message appended to time string if auto-break is applied
     )
     
 );
