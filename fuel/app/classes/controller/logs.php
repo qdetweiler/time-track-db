@@ -124,6 +124,22 @@ class Controller_Logs extends Controller_Template {
       
     }
     
+//    public function action_test(){
+//        
+//        $time = 1383475164;
+//        //$time = time();
+//        $data_set['time'] = $time;
+//        $data_set['time_s'] = date("g:i a m/d/Y I", $data_set['time']);
+//        $data_set['time_strtotime'] = date("g:i a m/d/Y I", strtotime(date("g:i a m/d/Y", $time)));
+//        $data_set['day_start'] = $this->find_day_start($time);
+//        $data_set['day_start_s'] = date("g:i a m/d/Y I", $data_set['day_start']);
+//        $data_set['day_end'] = $this->find_day_end($time);
+//        $data_set['day_end_s'] = date("g:i a m/d/Y I", $data_set['day_end']);
+//        $data['data_set'] = $data_set;
+//        $this->template->content = View::forge('root/test', $data);
+//        
+//    }
+    
     /**
      * Return the Unix timestamp representing the clockin time of the first
      * log for the specified user or the first overall log if the string
@@ -525,7 +541,7 @@ class Controller_Logs extends Controller_Template {
           'where' => array(
               array('user_id', $user_id),
               array('clockin', '>=', strtotime($start_date)),
-              array('clockout', '<=', (strtotime($end_date)+(86399))),
+              array('clockout', '<=', $this->find_day_end(strtotime($end_date))),
               $type_rule,
           )
       ));
@@ -576,7 +592,7 @@ class Controller_Logs extends Controller_Template {
     private function forge_day_full($user_id, $day_start, $admin, $round, $showtype){
       
         //end of the day
-        $day_end = $day_start + (24*60*60)-1; //one day minus one second in seconds
+        $day_end = $this->find_day_end($day_start);
         $day_total = 0;
         $data['logs'] = array();
         
@@ -707,6 +723,31 @@ class Controller_Logs extends Controller_Template {
     }
     
     /**
+     * Return a timestamp representing the beginning of the day that
+     * includes the timestamp specified
+     * @param type $timestamp
+     * @return type
+     */
+    private function find_day_start($timestamp){
+        
+        $date = "12:00:00 am ".date("m/d/Y", $timestamp);
+        return strtotime($date);
+        
+    }
+    
+    /**
+     * Return a timestamp representing the end of the day that includes the
+     * time specified
+     * @param type $day_start
+     */
+    private function find_day_end($timestamp){
+        
+        $date_start = "11:59:59 pm ".date("m/d/Y", $timestamp);
+        return strtotime($date_start);
+        
+    }
+    
+    /**
      * Forge the display required if showing only daily totals for a user
      * @param type $user_id
      * @param type $day_start
@@ -714,7 +755,7 @@ class Controller_Logs extends Controller_Template {
     private function forge_day_totals_only($user_id, $day_start){
       
       //end of the day
-      $day_end = $day_start + (24*60*60)-1; //one day minus one second in seconds
+      $day_end = $this->find_day_end($day_start); //one day minus one second in seconds
       $day_total = 0;
 
       //fetch all logs for the day that have been clocked out
@@ -1069,7 +1110,7 @@ class Controller_Logs extends Controller_Template {
         $end_day = strtotime("+ ".\Config::get
                 ('timetrack.period_length')." -1 day", $start_day);
         
-        $curr_day_start = $start_day;
+        $curr_day_start = $this->find_day_start($start_day);
         $overall_total = 0;
         
         //cycle through days and grab all the logs for the user for that
@@ -1085,7 +1126,7 @@ class Controller_Logs extends Controller_Template {
             $day_views[] = $day_view;
             
             //update control variable
-            $curr_day_start += (24*60*60);//add one day in seconds
+            $curr_day_start = $this->find_day_end($curr_day_start) + 1;//add one day in seconds
 
         }
         
