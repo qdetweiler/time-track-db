@@ -249,9 +249,16 @@ class Controller_Logs extends Controller_Template {
      */
     private function round_to_period($timestamp){
       
-      $distance = $timestamp - \Config::get('timetrack.first_period_start');
-      $difference = $distance % \Config::get('timetrack.period_length_seconds');
-      return $timestamp - $difference;
+//      $distance = $timestamp - \Config::get('timetrack.first_period_start');
+//      $difference = $distance % \Config::get('timetrack.period_length_seconds');
+//      return $timestamp - $difference;
+        $begin_day_timestamp = strtotime("12:00:00 am ".date("m/d/y", $timestamp));
+        $period_start = \Config::get('timetrack.first_period_start');
+        while($period_start <= $begin_day_timestamp){
+            $period_start 
+                    = strtotime("+ ".\Config::get('timetrack.period_length'), $period_start);
+        }
+        return strtotime("- ".\Config::get('timetrack.period_length'), $period_start);
       
     }
     
