@@ -187,10 +187,11 @@ class Controller_Root extends Controller_Template {
 
     //there is a valid user
     //fetch last timelog for testing
-    $last_log = Model_Timelog::find('last', array(
+    $last_log = Model_Timelog::find('first', array(
                 'where' => array(
                     array('user_id', $id),
-                )
+                ),
+                'order_by' => array('clockout' => 'desc')
     ));
 
 
