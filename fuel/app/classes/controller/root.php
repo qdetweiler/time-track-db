@@ -191,7 +191,7 @@ class Controller_Root extends Controller_Template {
                 'where' => array(
                     array('user_id', $id),
                 ),
-                'order_by' => array('clockout' => 'desc')
+                'order_by' => array('clockin' => 'desc')
     ));
 
 
