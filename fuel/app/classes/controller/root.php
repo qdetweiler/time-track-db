@@ -191,6 +191,8 @@ class Controller_Root extends Controller_Template {
                 'where' => array(
                     array('user_id', $id),
                 ),
+                //ordering required here because default ordering may be
+                //incorrect if logs for previous dates are added manually
                 'order_by' => array('clockin' => 'desc')
     ));
 
