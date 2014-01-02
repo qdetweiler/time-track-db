@@ -326,6 +326,8 @@ class Controller_Root extends Controller_Template {
       //at least one LOG_INTERVAL has passed
     } else {
 
+       $type = $log->type;
+        
       //if this log's clockout is on a different day than it's clockin, split
       //it into multiple days
       while (date('d/m/y', $time) != date('d/m/y', $log->clockin)) {
@@ -336,7 +338,7 @@ class Controller_Root extends Controller_Template {
         $log = Model_Timelog::forge();
         $log->user_id = $id;
         $log->clockin = strtotime('tomorrow', $prev_day);
-        $log->type = 0;
+        $log->type = $type;
       }
 
       $log->clockout = $time;
