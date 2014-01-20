@@ -70,11 +70,6 @@ function setup_edit_buttons(){
           var date = convert_hhmmtt(time);
           $(this).timepicker("setDate", date);
 
-        } else {
-          var date = convert_hhmmtt($(this).closest('form')
-                  .find('.time_input').first().val());
-          date.setMinutes(date.getMinutes()+log_min_interval);
-          $(this).timepicker("setDate", date);
         }
 
       });
