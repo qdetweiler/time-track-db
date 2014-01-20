@@ -307,7 +307,7 @@ class Controller_Logs extends Controller_Template {
             );
         }
       
-      rsort($periods);//TODO optimize here
+      $periods = array_reverse($periods);//TODO optimize here
       $data['periods'] = $periods;
       
       //forge the view
@@ -1090,6 +1090,15 @@ class Controller_Logs extends Controller_Template {
     private function remove_log($id){
       
       $log = Model_Timelog::find($id);
+      
+      //if log is open (not clocked out), change the status of
+      //the user to match
+      if($log->clockout == 0){
+          $user = Model_User::find($log->user_id);
+          $user->clocked_in = 0;
+          $user->save();
+      }
+      
       $log->delete();
 
       return Response::forge(json_encode(array('success' => true,
