@@ -32,6 +32,11 @@
   margin:15px 0px;
 }
 
+#log_type {
+  margin-top:15px;
+  width:100%;
+}
+
 .rounded {
   border-radius:5px;
 }

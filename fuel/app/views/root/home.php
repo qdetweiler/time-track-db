@@ -16,7 +16,7 @@
                  type='submit' name='activate_clock' value='<?php echo $button_label?>'/>
           
           <?php if($clockin):?>
-            <select id="log_type" name="type">
+            <select id="log_type" class='rounded' name="type">
                 <?php foreach($type_options as $type_value => $type_string):?>
                 <option value="<?php echo $type_value?>"><?php echo $type_string?></option>
                 <?php endforeach?>
