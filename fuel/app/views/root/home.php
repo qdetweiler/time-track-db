@@ -14,6 +14,15 @@
       <form id='clock_form' action='<?php echo $action?>' method='post'>
           <input id='clock_button' class='black_button rounded' 
                  type='submit' name='activate_clock' value='<?php echo $button_label?>'/>
+          
+          <?php if($clockin):?>
+            <select id="log_type" name="type">
+                <?php foreach($type_options as $type_value => $type_string):?>
+                <option value="<?php echo $type_value?>"><?php echo $type_string?></option>
+                <?php endforeach?>
+            </select>
+          <?php endif?>
+          
       </form>
   </div>
     

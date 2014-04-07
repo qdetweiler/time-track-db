@@ -205,6 +205,7 @@ class Controller_Root extends Controller_Template {
     if(is_null($last_log)){
         
         $data['button_label'] = 'Clock In';
+        $data['clockin'] = true;
         $data['action'] = Uri::create('root/clock_in');
         $data['last_clock_s'] = 'N/A';
         
@@ -213,6 +214,7 @@ class Controller_Root extends Controller_Template {
     } else if ($last_log->clockout == 0) {
 
       $data['button_label'] = 'Clock Out';
+      $data['clockin'] = false;
       $data['action'] = Uri::create('root/clock_out');
       $data['last_clock_s'] = 'Last Clocked In:  '
               . date(\Config::get('timetrack.last_clock_format'), $last_log->clockin);
@@ -221,6 +223,7 @@ class Controller_Root extends Controller_Template {
     } else {
 
       $data['button_label'] = 'Clock In';
+      $data['clockin'] = true;
       $data['action'] = Uri::create('root/clock_in');
       $data['last_clock_s'] = 'Last Clocked Out:  '
               . date(\Config::get('timetrack.last_clock_format'), $last_log->clockout);
@@ -267,7 +270,11 @@ class Controller_Root extends Controller_Template {
     $id_info = Auth::get_user_id();
     $id = $id_info[1];
 
-    $this->perform_clockin($id);
+    if(\Input::post('type')){
+        $this->perform_clockin($id, Input::post('type'));
+    } else {
+        $this->perform_clockin($id);
+    }
 
     //redirect to home
     Response::redirect('root/home');
@@ -280,20 +287,23 @@ class Controller_Root extends Controller_Template {
    * direct and non-admin access.
    * @param type $id
    */
-  private function perform_clockin($id) {
+  private function perform_clockin($id, $type = 0) {
 
     //fetch last log for the user with the given ID
     $last_log = Model_Timelog::find('last', array(
                 'where' => array(
                     array('user_id' => $id),
-                ),
+            ),
     ));
 
     $time = time();
     $interval = 60 * \Config::get('timetrack.log_interval');
 
-    //less than a rounded time period has passed
-    if (!is_null($last_log) && Util::roundToInterval($last_log->clockout, $interval) == Util::roundToInterval($time, $interval)) {
+    //less than a rounded time period has passed and type is the same
+    if (!is_null($last_log) 
+            && Util::roundToInterval($last_log->clockout, $interval) 
+                == Util::roundToInterval($time, $interval) 
+            && ($last_log->type === $type)) {
 
       //extend the previous timelog rather than creating a new one
       $last_log->clockout = 0;
@@ -304,7 +314,7 @@ class Controller_Root extends Controller_Template {
       $log->user_id = $id;
       $log->clockin = time();
       $log->clockout = 0;
-      $log->type = 0;
+      $log->type = $type;
       $log->save();
     }
 
