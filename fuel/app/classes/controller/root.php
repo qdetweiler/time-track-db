@@ -226,6 +226,15 @@ class Controller_Root extends Controller_Template {
               . date(\Config::get('timetrack.last_clock_format'), $last_log->clockout);
     }
     
+    //get type options
+    $types = Config::get('timetrack.log_types');
+    $data['type_options'] = array();
+    foreach($types as $type_v => $type_array){
+        if($type_array['clockable']){
+            $data['type_options'][$type_v] = $type_array['string'];
+        }
+    }
+    
     $data['time'] = date(\Config::get('timetrack.clock_format'), time());
     
     //setup local javascript variables
