@@ -62,12 +62,13 @@ return array(
     
     //log type definitions
     //Note:  -whatever is at value 0 will be the default
-    //       -any entries above 0 are considered payed time off (there is
-    //            currently no way to specify non-payed time off)
+    //       -only entries marked as 'pto' will be visible in the PTO tab
+    //       -ONLY ADD ENTRIES below the current entries or database corruption will occur
     'log_types' => array(
-        0 => 'Standard',//
-        1 => 'Vacation',
-        2 => 'Sick',
+        0 => array('string' => 'Standard', 'pto' => false, 'clockable' => true),
+        1 => array('string' => 'Vacation', 'pto' => true, 'clockable' => false),
+        2 => array('string' => 'Sick', 'pto' => true, 'clockable' => false),
+        3 => array('string' => 'Onsite', 'pto' => false, 'clockable' => true)
     ),
     
     //auto-break settings

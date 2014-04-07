@@ -199,16 +199,16 @@ class Controller_Logs extends Controller_Template {
       $types = \Config::get('timetrack.log_types');
       
       //for each type, setup information for the view
-      foreach($types as $type_v => $type_s){
+      foreach($types as $type_v => $type_array){
         $t['type_val'] = $type_v;
-        $t['type_string'] = $type_s;
+        $t['type_string'] = $type_array['string'];
         $t['selected'] = ($type_v == $type);
         array_push($data['types'], $t);
       }
       
       //setup selected value string (type = -1 blanks the string)
-      $data['selected_type'] = ($type === -1) ? '' 
-              : \Config::get('timetrack.log_types.'.$type);
+      $data['selected_type'] = ($type === -1) ? ''
+              : \Config::get('timetrack.log_types.'.$type.'.string');
       
       return View::forge('logs/partials/type_options', $data);
       
@@ -224,14 +224,14 @@ class Controller_Logs extends Controller_Template {
       $types = Config::get('timetrack.log_types');
       
       //for each type, setup information for the view
-      foreach($types as $type_v => $type_s){
-        $t['type_val'] = $type_v;
-        $t['type_string'] = $type_s;
-        $t['selected'] = ($type_v == $type);
-        array_push($data['types'], $t);
+      foreach($types as $type_v => $type_array){
+        if($type_array['pto'] == true){
+            $t['type_val'] = $type_v;
+            $t['type_string'] = $type_array['string'];
+            $t['selected'] = ($type_v == $type);
+            array_push($data['types'], $t);
+        }
       }
-      
-      array_shift($data['types']);//remove '0' entry
       
       //add entry for 'all'
       $t['type_val'] = 'all';
@@ -556,9 +556,13 @@ class Controller_Logs extends Controller_Template {
       //create the partial views
       $views = array();
       foreach($logs as $log){
-        list($time, $view) = $this->forge_pto_log($log, $type=='all');
-        $total += $time;
-        array_push($views, $view);
+          
+        //only construct view if this is a 'pto' log
+        if(\Config::get('timetrack.log_types.'.$log->type.'.pto')){  
+            list($time, $view) = $this->forge_pto_log($log, $type=='all');
+            $total += $time;
+            array_push($views, $view);
+        }
       }
       
       return array($total, $views);
@@ -579,7 +583,7 @@ class Controller_Logs extends Controller_Template {
       $data['range'] = $parsed->clockin_string.' - '.$parsed->clockout_string;
       $data['total'] = Util::sec2hms($time);
       $data['show_type'] = $showtype;
-      $data['type'] = \Config::get('timetrack.log_types.'.$log->type);
+      $data['type'] = \Config::get('timetrack.log_types.'.$log->type.'.string');
       
       $view = View::forge('logs/partials/pto_log', $data);
       
