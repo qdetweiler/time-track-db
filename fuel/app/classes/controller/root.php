@@ -137,6 +137,10 @@ class Controller_Root extends Controller_Template {
 
       //user account exists
       if (!is_null($user)) {
+          
+         if($user->num_attempts == (\Config::get('timetrack.max_attempts'))-1){
+             $data['error'] = "Your account will be locked after 1 additional failed attempt";
+         }
 
         //if this is the third invalid attempt, lock
         //the account for LOCK_TIME minutes
