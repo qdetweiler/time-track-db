@@ -65,10 +65,15 @@ return array(
     //       -only entries marked as 'pto' will be visible in the PTO tab
     //       -ONLY ADD ENTRIES below the current entries or database corruption will occur
     'log_types' => array(
-        0 => array('string' => 'Standard', 'pto' => false, 'clockable' => true),
-        1 => array('string' => 'Vacation', 'pto' => true, 'clockable' => false),
-        2 => array('string' => 'Sick', 'pto' => true, 'clockable' => false),
-        3 => array('string' => 'Onsite', 'pto' => false, 'clockable' => true)
+        0 => array('string' => 'Standard', 'pto' => false, 'clockable' => true, 'group' => 0),
+        1 => array('string' => 'Vacation', 'pto' => true, 'clockable' => false, 'group' => 0),
+        2 => array('string' => 'Sick', 'pto' => true, 'clockable' => false, 'group' => 0),
+        3 => array('string' => 'Onsite', 'pto' => false, 'clockable' => true, 'group' => 1)
+    ),
+    
+    'log_groups' => array(
+        0 => array('label' => 'Standard'),
+        1 => array('label' => 'Onsite'),
     ),
     
     //auto-break settings

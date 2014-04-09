@@ -377,20 +377,22 @@ class Controller_Logs extends Controller_Template {
 
             //create day partial views and get overall total\
             
-            list($overall_total, $day_views) 
+            list($overall_totals, $day_views) 
                     = $this->forge_days($u->id, $period_start, $data['admin']
                             ,$round, $full, $showtype);
 
             //setup data for view
             $usr['name'] = $u->fname.' '.$u->lname;
             $usr['day_views'] = $day_views;
-            $usr['period_total'] = Util::sec2hms($overall_total);
+            
+            //setup period totals
+            $usr['period_totals'] = $this->parse_group_totals($overall_totals);
+            
             $users[] = $usr;
 
           }
 
           $data['users'] = $users;
-          
           $data['full'] = $full;
           $data['showtype'] = $showtype;
 
@@ -414,13 +416,19 @@ class Controller_Logs extends Controller_Template {
               'order_by' => array('clockin' => 'asc'),
             ));
           
-            $total = 0;
+            $totals = array();
             foreach($logs_for_period as $log){
               $parsed = $this->parse_log($log, true, false);
-              $total += $parsed->time;
+              $group = \Config::get('timetrack.log_types.'.$log->type.'.group');
+              if(isset($totals[$group])){
+                  $totals[$group] += $parsed->time;
+              } else {
+                  $totals[$group] = $parsed->time;
+              }
+              
             }
             
-            $usr['total'] = Util::sec2hms($total);
+            $usr['totals'] = $this->parse_group_totals($totals);
             $usr['name'] = $u->fname.' '.$u->lname;
             array_push($data['users'], $usr);
           
@@ -604,7 +612,7 @@ class Controller_Logs extends Controller_Template {
       
         //end of the day
         $day_end = $this->find_day_end($day_start);
-        $day_total = 0;
+        $day_totals = array();
         $data['logs'] = array();
         
         //fetch all logs for the day that have been clocked out
@@ -686,11 +694,17 @@ class Controller_Logs extends Controller_Template {
             $log['type'] = $this->forge_type_options($log_for_day->type);
             $log['controls'] = View::forge('logs/partials/edit_controls');
             array_push($data['logs'], $log);
-            $day_total += $parsed->time;
             
+            $group = \Config::get('timetrack.log_types.'.$log_for_day->type.'.group');
+            if(isset($day_totals[$group])){
+                $day_totals[$group] += $parsed->time;
+            } else {
+                $day_totals[$group] = $parsed->time;
+            }
+                        
           }
           
-          //if there is also a closed log for this day, create
+          //if there is also an open log for this day, create
           //a view for that log
           if(!is_null($log_sans_clockout)){
             
@@ -729,7 +743,7 @@ class Controller_Logs extends Controller_Template {
         $data['user_id'] = $user_id;
         $data['admin'] = Auth::member(\Config::get('timetrack.admin_group'));
           
-        return array($day_total, View::forge('logs/partials/day', $data));
+        return array($day_totals, View::forge('logs/partials/day', $data));
         
     }
     
@@ -767,7 +781,7 @@ class Controller_Logs extends Controller_Template {
       
       //end of the day
       $day_end = $this->find_day_end($day_start); //one day minus one second in seconds
-      $day_total = 0;
+      $day_totals = array();
 
       //fetch all logs for the day that have been clocked out
       $logs_for_day = Model_Timelog::find('all', array(
@@ -780,16 +794,37 @@ class Controller_Logs extends Controller_Template {
           'order_by' => array('clockin' => 'asc'),
       ));
       
+      //add total information
       foreach($logs_for_day as $log){
         $parsed = $this->parse_log($log, true, false);
-        $day_total = $parsed->time;
+        $group = \Config::get('timetrack.log_types.'.$log->type.'.group');
+        if(isset($day_totals[$group])){
+            $day_totals[$group] += $parsed->time;
+        } else {
+            $day_totals[$group] = $parsed->time;
+        }
       }
       
       $data['day_label'] = date(\Config::get('timetrack.log_date_format'), $day_start);
-      $data['time'] = Util::sec2hms($day_total);
+      $data['totals'] = $this->parse_group_totals($day_totals);
       
-      return array($day_total, View::forge('logs/partials/day_totals_only', $data));
+      return array($day_totals, View::forge('logs/partials/day_totals_only', $data));
       
+    }
+    
+    /**
+     * Takes an array of group totals in the format id => total
+     * and returns an array of labels mapped to formatted time values
+     * @param type $totals
+     */
+    public function parse_group_totals($totals){
+        
+        $parsed = array();
+        foreach($totals as $id => $total){
+            $parsed[\Config::get('timetrack.log_groups.'.$id.'.label')] = Util::sec2hms($total);
+        }
+        return $parsed;
+        
     }
     
     /**
@@ -1131,18 +1166,25 @@ class Controller_Logs extends Controller_Template {
                 ('timetrack.period_length')." -1 day", $start_day);
         
         $curr_day_start = $this->find_day_start($start_day);
-        $overall_total = 0;
+        $overall_totals = array();
         
         //cycle through days and grab all the logs for the user for that
         //day
         while($curr_day_start <= $end_day){
 
             //setup data for the view for this day
-            list($day_total, $day_view) = ($full)
+            list($day_totals, $day_view) = ($full)
                    ? $this->forge_day_full($id, $curr_day_start, $admin, $round, $showtype)
                    : $this->forge_day_totals_only($id, $curr_day_start);
-            
-            $overall_total += $day_total;
+
+            //update overall totals
+            foreach($day_totals as $group_id => $day_total){
+                if(isset($overall_totals[$group_id])){
+                    $overall_totals[$group_id] += $day_total;
+                } else {
+                    $overall_totals[$group_id] = $day_total;
+                } 
+            }
             $day_views[] = $day_view;
             
             //update control variable
@@ -1150,7 +1192,7 @@ class Controller_Logs extends Controller_Template {
 
         }
         
-        return array($overall_total, $day_views);
+        return array($overall_totals, $day_views);
       
     }
     
