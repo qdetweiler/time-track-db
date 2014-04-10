@@ -29,7 +29,7 @@
 }
 
 .log_time {
-  min-width:100px;
+  min-width:130px;
   margin-right:20px;
   padding:3px;
 
@@ -111,11 +111,46 @@
 
 .total_display_wrapper{
   margin:10px 2px;
-  padding:5px;
   border:1px solid #cccccc;
 }
 
 .pt_name {
-  display:inline-block;
+  display:block;
+  vertical-align: top;
   min-width:250px;
+}
+
+.pt_name_h3 {
+  padding:5px;
+  background-color:#251f55;
+  color:white;
+}
+
+.pt_total_display{
+    margin:10px;
+}
+
+.total_display div {
+  margin-bottom:3px;
+}
+
+.group_label {
+    display:inline-block;
+    text-align:right;
+    font-weight:bold;
+    width:75px;
+    margin-right:5px;
+}
+
+.group_total {
+    display:inline-block;
+    text-align:left;
+    //font-weight:bold;
+}
+
+#break {
+    margin:2px 0px;
+    padding:0px;
+    display:inline-block;
+    width:300px;
 }
