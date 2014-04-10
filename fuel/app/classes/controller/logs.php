@@ -387,6 +387,7 @@ class Controller_Logs extends Controller_Template {
             
             //setup period totals
             $usr['period_totals'] = $this->parse_group_totals($overall_totals);
+            $usr['total'] = $this->sum_group_totals($overall_totals);
             
             $users[] = $usr;
 
@@ -425,10 +426,10 @@ class Controller_Logs extends Controller_Template {
               } else {
                   $totals[$group] = $parsed->time;
               }
-              
             }
             
-            $usr['totals'] = $this->parse_group_totals($totals);
+            $usr['period_totals'] = $this->parse_group_totals($totals);
+            $usr['total'] = $this->sum_group_totals($totals);
             $usr['name'] = $u->fname.' '.$u->lname;
             array_push($data['users'], $usr);
           
@@ -813,16 +814,30 @@ class Controller_Logs extends Controller_Template {
     }
     
     /**
+     * Return a formatted string showing the sum of times
+     * for all groups
+     * @param type $totals
+     */
+    private function sum_group_totals($totals){
+        $t = 0;
+        foreach($totals as $id => $total){
+            $t += $total;
+        }
+        return Util::sec2hms($t);
+    }
+    
+    /**
      * Takes an array of group totals in the format id => total
      * and returns an array of labels mapped to formatted time values
      * @param type $totals
      */
-    public function parse_group_totals($totals){
+    private function parse_group_totals($totals){
         
         $parsed = array();
         foreach($totals as $id => $total){
             $parsed[\Config::get('timetrack.log_groups.'.$id.'.label')] = Util::sec2hms($total);
         }
+        ksort($parsed);//ksort so label order is consistent
         return $parsed;
         
     }
