@@ -39,7 +39,19 @@
   ?>
     
   <div class='total_display'>
-    <h3>Total: <?php echo $user['period_total']?></h3>
+    <?php foreach($user['period_totals'] as $label => $total):?>
+      <div class='group_display'>  
+        <span class='group_label'><?php echo $label?>:</span>
+        <span class='group_total'> <?php echo $total?></span>
+      </div>
+    <?php endforeach?>
+    <?php if(count($user['period_totals']) > 1):?>
+      <div id='break_div'><hr id='break'></div>
+        <div class='group_display'>
+          <span class='group_label'>Total:</span>
+          <span class='group_total'><?php echo $user['total']?></span>
+        </div>
+      <?php endif?>
   </div>
 </div>
 
