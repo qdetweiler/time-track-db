@@ -28,7 +28,7 @@
                 <label>Round Times</label>
             </span>
             <span id='showtype'>
-                <input type='checkbox' name='showtype' value='false'/>
+                <input type='checkbox' name='showtype' value='true' checked/>
                 <label>Show Type</label>
             </span>
             <span id='round'>
