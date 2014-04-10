@@ -19,6 +19,5 @@
             <p class='log_time grey'>None</p>
         </div>
     <?php endif ?>
-
-
+    
 </div>
