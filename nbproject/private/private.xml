@@ -1,13 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project-private xmlns="http://www.netbeans.org/ns/project-private/1">
-    <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="3">
+    <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="5">
         <file>
             <url>fuel/app/classes/controller/logs.php</url>
+            <bookmark id="4">
+                <name/>
+                <line>249</line>
+                <key/>
+            </bookmark>
+            <bookmark id="5">
+                <name/>
+                <line>388</line>
+                <key/>
+            </bookmark>
             <bookmark id="3">
                 <name/>
-                <line>551</line>
+                <line>586</line>
                 <key/>
             </bookmark>
         </file>
     </editor-bookmarks>
+    <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
+        <group>
+            <file>file:/C:/Users/Admin/Documents/NetBeansProjects/time-track-db/public/assets/css/logs_logtable.css</file>
+            <file>file:/C:/Users/Admin/Documents/NetBeansProjects/time-track-db/fuel/packages/orm/classes/model.php</file>
+            <file>file:/C:/Users/Admin/Documents/NetBeansProjects/time-track-db/fuel/app/classes/controller/logs.php</file>
+            <file>file:/C:/Users/Admin/Documents/NetBeansProjects/time-track-db/fuel/app/views/logs/logtable2_period_totals.php</file>
+            <file>file:/C:/Users/Admin/Documents/NetBeansProjects/time-track-db/fuel/app/views/logs/partials/day_totals_only.php</file>
+            <file>file:/C:/Users/Admin/Documents/NetBeansProjects/time-track-db/fuel/app/config/config.php</file>
+            <file>file:/C:/Users/Admin/Documents/NetBeansProjects/time-track-db/public/assets/js/logs-display.js</file>
+            <file>file:/C:/Users/Admin/Documents/NetBeansProjects/time-track-db/fuel/app/views/logs/logtable3.php</file>
+            <file>file:/C:/Users/Admin/Documents/NetBeansProjects/time-track-db/fuel/app/config/timetrack.php</file>
+        </group>
+    </open-files>
 </project-private>
