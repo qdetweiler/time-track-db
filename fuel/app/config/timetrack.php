@@ -68,7 +68,8 @@ return array(
         0 => array('string' => 'Standard', 'pto' => false, 'clockable' => true, 'group' => 0),
         1 => array('string' => 'Vacation', 'pto' => true, 'clockable' => false, 'group' => 0),
         2 => array('string' => 'Sick', 'pto' => true, 'clockable' => false, 'group' => 0),
-        3 => array('string' => 'Onsite', 'pto' => false, 'clockable' => true, 'group' => 1)
+        3 => array('string' => 'Onsite', 'pto' => false, 'clockable' => true, 'group' => 1),
+        4 => array('string' => 'Holiday', 'pto' => true, 'clockable' => false, 'group' => 0)
     ),
     
     'log_groups' => array(
